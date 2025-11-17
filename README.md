@@ -77,19 +77,23 @@ Try to provide readable and consistent docs regarding your module, to make work 
 base on your module. I suppose that they will be grateful for that ;)
 ## Suggestions for the backend teams
 To make your life easier try to use python virtual environment. To use it go to backend folder and type:
-```Windows
+Windows
+```
 python -m venv venv
 ```
-```Linux
+Linux
+```
 python3 -m venv venv
 ```
 Then every dependency you will download using `pip` will be saved in the `venv` of our project. Remember that that
 folder should not be put on github (by default it is included in `.gitignore`). Note that before working on a project
 and downloading the dependencies, you need to make sure that your `venv` is activated. To achive that you need to:
-```Windows
+Windows
+```
 venv\Scripts\activate
 ```
-```Linux
+Linux
+```
 source venv/bin/activate
 ```
 > If you use dependencies in your module please save them in a file `requirements.txt` in your module directory. It will allow
