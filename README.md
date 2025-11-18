@@ -97,8 +97,8 @@ Linux
 ```
 source venv/bin/activate
 ```
-> If you use dependencies in your module please save them in a file `requirements.txt` in your module directory. It will allow
-> people who would like to run your program, donwload using only one command all needed dependencies.
+If you use dependencies in your module please save them in a file `requirements.txt` in your module directory. It will allow
+people who would like to run your program, download using only one command all needed dependencies.
 You just simpy need to use following command, being in the folder of you module:
 ```
 pip freeze > requirements.txt
@@ -109,7 +109,7 @@ pip install -r requirements.txt
 ```
 The general `requirements.txt` is also provided, with dependencies that must be used by all teams.
 ---
-In general what tools do you need for start of development:
+In general what tools do you need at the beggining?
 - If you are using Windows: only python, if Linux: python3, python3-venv, python3-pip
 - git
 - node and npm which might be installed using such commands if on linux:
