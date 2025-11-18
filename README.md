@@ -19,7 +19,8 @@ git checkout feature/your-feature-name
 - Try to provide the appropriate unit tests for you module, testing the most important
 functionalities of your module (backend teams using `pytest`). It will be beneficial
 to automate the process of reviewing Pull requests, the process will be less error prone.
-Instead of manualy checking, reviewer will be able to run unit tests and check if everything is correct.
+Instead of manualy checking, reviewer will be able to run unit tests and check if everything is correct. Generally, it is optional, but highly recommended.
+- In Pull request, in description, screenshot showing corretly run unit tests (if there are any) for modules within all the changed modules should be placed.
 - In Pull request put only checked and correct code, according to your best knowledge.
 ## Project structure
 ```
@@ -107,3 +108,16 @@ In order to download dependencies you just type, being in the folder of the give
 pip install -r requirements.txt
 ```
 The general `requirements.txt` is also provided, with dependencies that must be used by all teams.
+---
+In general what tools do you need for start of development:
+- If you are using Windows: only python, if Linux: python3, python3-venv, python3-pip
+- git
+- node and npm which might be installed using such commands if on linux:
+```
+nvm install --lts
+nvm use --lts
+node -v
+npm -v
+```
+Helpful resources are:
+- https://fastapi.tiangolo.com/
