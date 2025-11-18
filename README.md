@@ -75,7 +75,7 @@ Instead of manualy checking, reviewer will be able to run unit tests and check i
 └── README.md
 ```
 Try to provide readable and consistent docs regarding your module, to make work easier for the teams, that
-base on your module. I suppose that they will be grateful for that ;)
+base on your module. I suppose that they will be grateful for that ;D
 ## Suggestions for the backend teams
 To make your life easier try to use python virtual environment. To use it go to backend folder and type:
 Windows
