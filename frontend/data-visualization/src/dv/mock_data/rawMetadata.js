@@ -9,4 +9,14 @@ export const rawMetadata = {
     MEDIUM: { color: 'orange', icon: '!!', label: 'Medium' },
     LOW:    { color: 'green', icon: '!', label: 'Low' },
   },
+  devices: {
+    'dev_temp_001': { model: 'Xiaomi Aqara', type: 'Czujnik Temperatury' },
+    'dev_power_main': { model: 'Licznik Główny', type: 'Licznik Energii' },
+    'dev_hvac_01': { model: 'Klimatyzator Samsung', type: 'HVAC' }
+  },
+  
+  zones: {
+    'z1': { name: 'Open Space' },
+    'z2': { name: 'Serwerownia' }
+  }
 };
