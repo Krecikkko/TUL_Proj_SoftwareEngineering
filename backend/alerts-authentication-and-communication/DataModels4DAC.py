@@ -3,9 +3,7 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime
 from enum import Enum
 
-# ... (Keep existing MetricType, MeasurementReading, DeviceStatus classes) ...
-
-# --- EXISTING METRICS MODELS ---
+# --- 1. METRICS MODELS (Measurements) ---
 class MetricType(str, Enum):
     POWER = "power_w"
     TEMPERATURE = "temp_c"
@@ -25,9 +23,34 @@ class DeviceStatus(BaseModel):
     last_state: Dict[str, Any]
     updated_at: datetime
 
-# ... (Keep existing User and Forecast models) ...
+# --- 2. CORE DB MODELS (Users) ---
+# This was missing in your file!
+class UserRole(str, Enum):
+    ADMIN = "admin"
+    MAINTENANCE = "maintenance"
+    USER = "user"
 
-# --- NEW: ALERT MODELS ---
+class User(BaseModel):
+    user_id: str
+    username: str
+    password_hash: str
+    role: UserRole
+    full_name: str
+
+# --- 3. FORECAST MODELS ---
+# This was also missing!
+class ForecastSeriesItem(BaseModel):
+    timestamp: datetime = Field(..., alias="ts")
+    value: float
+
+class Forecast(BaseModel):
+    forecast_id: str = Field(..., alias="_id")
+    type: str
+    horizon: str
+    issued_at: datetime
+    series: List[ForecastSeriesItem]
+
+# --- 4. ALERT MODELS ---
 class AlertSeverity(str, Enum):
     CRITICAL = "critical"
     WARNING = "warning"

@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List
 from datetime import datetime, timedelta
 import random
-from .DataModels4DAC import Forecast, ForecastSeriesItem
+from DataModels4DAC import Forecast, ForecastSeriesItem
 
 class IForecastRead(ABC):
     """

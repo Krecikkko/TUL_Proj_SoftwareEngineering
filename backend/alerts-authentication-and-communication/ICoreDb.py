@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Optional
-from .DataModels4DAC import User, UserRole
+from DataModels4DAC import User, UserRole
 
 class ICoreDb(ABC):
     """

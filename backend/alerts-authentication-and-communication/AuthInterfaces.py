@@ -5,11 +5,11 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 
 # 1. IMPORTS
-from .IMeasurement import IMeasurement, MockMeasurementRepository
-from .ICoreDb import ICoreDb, MockCoreDb
-from .IForecastRead import IForecastRead, MockForecastRepository
+from IMeasurement import IMeasurement, MockMeasurementRepository
+from ICoreDb import ICoreDb, MockCoreDb
+from IForecastRead import IForecastRead, MockForecastRepository
 # Import the new Alert models
-from .DataModels4DAC import MetricType, UserRole, Alert, AlertSeverity
+from DataModels4DAC import MetricType, UserRole, Alert, AlertSeverity
 
 # --- FRONTEND DATA CONTRACTS ---
 class UserLogin(BaseModel):

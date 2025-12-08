@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import random
 
 # 1. IMPORT SHARED MODELS (Don't redefine them!)
-from .DataModels4DAC import MeasurementReading, DeviceStatus, MetricType
+from DataModels4DAC import MeasurementReading, DeviceStatus, MetricType
 
 # --- THE INTERFACE ---
 class IMeasurement(ABC):
