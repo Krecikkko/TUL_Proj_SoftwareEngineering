@@ -1,0 +1,126 @@
+schema:
+  name: Core
+  tables:
+    building:
+      columns:
+        id: {type: UUID, primary_key: true}
+        name: {type: VARCHAR(255), not_null: true}
+        address: {type: VARCHAR(255), nullable: true}
+        timezone: {type: VARCHAR(255), not_null: true}
+
+    floor:
+      columns:
+        id: {type: UUID, primary_key: true}
+        building_id: {type: UUID, not_null: true}
+        name: {type: VARCHAR(255), not_null: true}
+      constraints:
+        - foreign_key: {column: building_id, references: building(id) }
+
+    room:
+      columns:
+        id: {type: UUID, primary_key: true}
+        floor_id: {type: UUID, not_null: true}
+        name: {type: VARCHAR(255), not_null: true}
+        area_m2: {type: NUMERIC(10, 2), nullable: true}
+        purpose: {type: VARCHAR(255), nullable: true}
+      constraints:
+        - foreign_key: {column: floor_id, references: floor(id) }
+
+    supplier:
+      columns:
+        id: {type: UUID, primary_key: true }
+        name: {type: VARCHAR(255), not_null: true }
+
+    tariff:
+      columns:
+        id: {type: UUID, primary_key: true }
+        supplier_id: {type: UUID, not_null: true }
+        code: {type: VARCHAR(255), not_null: true }
+        valid_from: {type: DATE, not_null: true }
+        valid_to: {type: DATE, not_null: true }
+        pricing_json: {type: JSON, not_null: true }
+      constraints:
+        - foreign_key: {column: supplier_id, references: supplier(id) }
+
+    role:
+      columns:
+        id: {type: UUID, primary_key: true }
+        name: {type: VARCHAR(255), not_null: true }
+
+    user_account:
+      columns:
+        id: {type: UUID, primary_key: true }
+        email: {type: VARCHAR(255), not_null: true, unique: true}
+        password_hash: {type: VARCHAR(255), not_null: true}
+        display_name: {type: VARCHAR(255), nullable: true}
+        status: {type: VARCHAR(255), not_null: true}
+
+    user_role:
+      columns:
+        user_id: {type: UUID}
+        role_id: {type: UUID}
+      constraints:
+        - primary_key: [user_id, role_id]
+        - foreign_key: {column: user_id, references: user_account(id)}
+        - foreign_key: {column: role_id, references: role(id)}
+
+    device:
+      columns:
+        id: {type: UUID, primary_key: true }
+        room_id: {type: UUID, not_null: true }
+        type: {type: VARCHAR(255), not_null: true}
+        vendor: {type: VARCHAR(255), nullable: true}
+        model: {type: VARCHAR(255), nullable: true}
+        serial_no: {type: VARCHAR(255), nullable: true}
+        rated_power_w: {type: INT, nullable: true}
+        install_date: {type: DATE, nullable: true}
+        status: {type: VARCHAR(255), not_null: true}
+      constraints:
+        - foreign_key: {column: room_id, references: room(id)}
+
+    room_hvac_device:
+      columns:
+        room_id: {type: UUID}
+        device_id: {type: UUID}
+      constraints:
+        - primary_key: [room_id, device_id]
+        - foreign_key: {column: room_id, references: room(id)}
+        - foreign_key: {column: device_id, references: device(id)}
+
+    room_setpoint:
+      columns:
+        id: {type: UUID, primary_key: true }
+        room_id: {type: UUID, not_null: true }
+        target_c: {type: NUMERIC(4, 1), not_null: true}
+        requested_by: {type: UUID, nullable: true}
+        requested_at: {type: TIMESTAMP, not_null: true}
+        expires_at: {type: TIMESTAMP, nullable: true}
+      constraints:
+        - foreign_key: {column: room_id, references: room(id)}
+        - foreign_key: {column: requested_by, references: user_account(id)}
+
+    alert:
+      columns:
+        id: {type: UUID, primary_key: true }
+        device_id: {type: UUID, nullable: true }
+        severity: {type: VARCHAR(255), not_null: true}
+        code: {type: VARCHAR(255), not_null: true}
+        message: {type: TEXT, not_null: true}
+        raised_at: {type: TIMESTAMP, not_null: true}
+        acknowledged_by: {type: UUID, nullable: true }
+        status: {type: VARCHAR(255), not_null: true}
+      constraints:
+        - foreign_key: {column: device_id, references: device(id)}
+        - foreign_key: {column: acknowledged_by, references: user_account(id)}
+
+    work_order:
+      columns:
+        id: {type: UUID, primary_key: true }
+        alert_id: {type: UUID, nullable: true }
+        assignee_user_id: {type: UUID, nullable: true } # <-- CORRECTED: Removed ')id' suffix
+        status: {type: VARCHAR(255), not_null: true}
+        created_at: {type: TIMESTAMP, not_null: true}
+        closed_at: {type: TIMESTAMP, nullable: true}
+      constraints:
+        - foreign_key: {column: alert_id, references: alert(id)}
+        - foreign_key: {column: assignee_user_id, references: user_account(id)}
