@@ -1,0 +1,145 @@
+.user-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f1f5f9;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.mobile-card {
+    width: 100%;
+    max-width: 400px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.user-header {
+    background-color: #2563eb; /* Ten mocny niebieski ze screena */
+    padding: 30px;
+    color: white;
+    position: relative;
+}
+
+.settings-icon {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.user-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Kafelki w środku */
+.control-box {
+    border: 1px solid #e2e8f0;
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    background: #fff;
+}
+
+.box-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.temp-value {
+    font-size: 3rem;
+    font-weight: 800;
+    color: #2563eb;
+    margin: 5px 0;
+}
+
+.controls-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 15px;
+}
+
+.btn-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-circle:hover { background-color: #1d4ed8; }
+
+/* Przełącznik (Switch) */
+.switch-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.toggle-bg {
+    width: 50px;
+    height: 26px;
+    background: #cbd5e1;
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.toggle-bg.active { background: #64748b; /* Ciemny szary jak na screenie */ }
+
+.toggle-circle {
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    transition: 0.3s;
+}
+
+.toggle-bg.active .toggle-circle { left: 27px; }
+
+/* Tryb Biura */
+.mode-switch {
+    background: #e2e8f0;
+    border-radius: 25px;
+    padding: 4px;
+    display: flex;
+    margin-top: 10px;
+}
+
+.mode-option {
+    flex: 1;
+    padding: 8px;
+    border-radius: 20px;
+    border: none;
+    background: transparent;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+}
+
+.mode-option.selected {
+    background-color: #2563eb;
+    color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
