@@ -1,5 +1,7 @@
 import React from 'react';
 import './AdminDashboard.css'; // Import stylów
+import EnergyChartWidget from './components/EnergyChartWidget';
+import AlertsWidget from './components/AlertsWidget';
 
 const AdminDashboard = () => {
     return (
@@ -54,47 +56,15 @@ const AdminDashboard = () => {
                     </div>
                 </div>
 
-                {/* Sekcja Wykresu (Placeholder) */}
-                <div className="chart-section">
-                    <div style={{ marginBottom: '10px' }}>
-                        <div className="kpi-label">ENERGY CONSUMPTION ANALYSIS (LIVE)</div>
-                        <div style={{ color: '#9ca3af', fontSize: '0.8rem' }}>
-                            Component: EnergyConsumptionChart
-                        </div>
-                    </div>
-
-                    <div className="chart-placeholder-box">
-                        <h2 className="chart-text">jakis wykres od dziewczyn</h2>
-                    </div>
+                {/* Sekcja Wykresu */}
+                <div className="chart-placeholder-box" style={{ display: 'block', height: 'auto' }}>
+                    <EnergyChartWidget />
                 </div>
 
                 {/* Tabela Aktywności */}
                 <div className="table-section">
-                    <div className="kpi-label">RECENT USER ACTIVITY</div>
-                    <table className="activity-table">
-                        <thead>
-                        <tr>
-                            <th>User</th>
-                            <th>Role</th>
-                            <th>Action</th>
-                            <th>Time</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr>
-                            <td>Kinga</td>
-                            <td>Maintenance Eng.</td>
-                            <td>Failure Report</td>
-                            <td>10:45 AM</td>
-                        </tr>
-                        <tr>
-                            <td>GHBhbch</td>
-                            <td>inna rola</td>
-                            <td>coś tam</td>
-                            <td>9:00 AM</td>
-                        </tr>
-                        </tbody>
-                    </table>
+                    <div className="kpi-label">RECENT SYSTEM ALERTS</div>
+                    <AlertsWidget />
                 </div>
 
             </main>
