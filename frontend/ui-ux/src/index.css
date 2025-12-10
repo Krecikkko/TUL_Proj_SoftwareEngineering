@@ -1,0 +1,27 @@
+/* src/index.css - NOWA TREŚĆ */
+:root {
+  font-family: 'Segoe UI', Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  /* Wymuszamy jasne tło dla całej aplikacji, żeby pasowało do Twoich projektów */
+  background-color: #f1f5f9;
+  color: #213547;
+
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  /* USUWAMY display: flex i place-items: center - to one centrowały wszystko na siłę! */
+  display: block;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
