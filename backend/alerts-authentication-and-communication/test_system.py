@@ -12,7 +12,7 @@ async def run_test_scenario():
     # 2. TEST AUTHENTICATION
     print("\n--- TEST 1: LOGIN ---")
     try:
-        login_data = UserLogin(username="admin", password="secret")
+        login_data = UserLogin(username="admin", password="sexdet")
         auth_token = await service.login_user(login_data)
         print(f"[✓] Login Successful!")
         print(f"    Token: {auth_token.access_token}")
