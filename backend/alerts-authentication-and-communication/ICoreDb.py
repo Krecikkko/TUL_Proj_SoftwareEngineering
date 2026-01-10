@@ -4,7 +4,7 @@ from DataModels4DAC import User, UserRole
 
 class ICoreDb(ABC):
     """
-    Interface provided by DAC for accessing SQL Core Data (Users, Buildings).
+    Interface provided by DAC for accessing SQL Core Data (Users).
     """
     @abstractmethod
     async def get_user_by_username(self, username: str) -> Optional[User]:
@@ -16,10 +16,11 @@ class MockCoreDb(ICoreDb):
         # Simulates a successful DB lookup
         if username == "admin":
             return User(
-                user_id="u_1",
+                _id="u_1",  # Use alias '_id' (or 'id') to match new model
                 username="admin",
-                password_hash="hashed_secret", # In real app, use bcrypt verify
+                password_hash="hashed_secret",
                 role=UserRole.ADMIN,
-                full_name="System Administrator"
+                full_name="System Administrator",
+                email="admin@system.com" # NEW FIELD added in DAC schema
             )
         return None

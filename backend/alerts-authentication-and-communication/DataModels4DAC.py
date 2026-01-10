@@ -3,54 +3,57 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime
 from enum import Enum
 
-# --- 1. METRICS MODELS (Measurements) ---
-class MetricType(str, Enum):
-    POWER = "power_w"
-    TEMPERATURE = "temp_c"
-    HUMIDITY = "humidity_pct"
-    CO2 = "co2_ppm"
-
+# --- 1. MEASUREMENT MODELS ---
+# Matches DAC 'Measurement' Document
 class MeasurementReading(BaseModel):
-    reading_id: str = Field(..., alias="_id")
-    device_id: str
-    metric: MetricType
+    id: Optional[str] = Field(None, alias="_id") # Beanie adds this automatically
+    deviceId: str
+    metric: str
     value: float
-    timestamp: datetime = Field(..., alias="ts")
+    ts: datetime
     tags: Optional[Dict[str, Any]] = None
 
-class DeviceStatus(BaseModel):
-    device_id: str = Field(..., alias="_id")
-    last_state: Dict[str, Any]
-    updated_at: datetime
+    class Config:
+        populate_by_name = True
 
-# --- 2. CORE DB MODELS (Users) ---
-# This was missing in your file!
+# --- 2. FORECAST MODELS ---
+# Matches DAC 'Forecast' Document
+class Forecast(BaseModel):
+    id: Optional[str] = Field(None, alias="_id")
+    type: str               # "energy_demand", "price"
+    horizon: str            # "1H", "1D"
+    issued_at: datetime
+    requested_by: str       # UUID
+    series_item: List[Dict[str, Any]] # [{ts, value, conf}, ...]
+    valid_for: Dict[str, datetime]    # {from, to}
+    model_meta: Dict[str, str]        # {algo, ver}
+    scope: Optional[Dict[str, str]] = None
+
+# --- 3. CORE MODELS ---
+# Matches DAC 'User' Document
 class UserRole(str, Enum):
     ADMIN = "admin"
     MAINTENANCE = "maintenance"
     USER = "user"
 
 class User(BaseModel):
-    user_id: str
+    id: Optional[str] = Field(None, alias="_id")
     username: str
     password_hash: str
-    role: UserRole
+    role: UserRole = UserRole.USER
     full_name: str
+    email: Optional[str] = None
 
-# --- 3. FORECAST MODELS ---
-# This was also missing!
-class ForecastSeriesItem(BaseModel):
-    timestamp: datetime = Field(..., alias="ts")
-    value: float
-
-class Forecast(BaseModel):
-    forecast_id: str = Field(..., alias="_id")
+# Matches DAC 'Device' Document (Metadata)
+class DeviceMetadata(BaseModel):
+    device_id: str
+    building_id: str
+    room_id: Optional[str] = None
     type: str
-    horizon: str
-    issued_at: datetime
-    series: List[ForecastSeriesItem]
+    status: str
 
-# --- 4. ALERT MODELS ---
+# --- 4. ALERT MODELS (AAC Specific) ---
+# These remain yours, but references must match DAC IDs
 class AlertSeverity(str, Enum):
     CRITICAL = "critical"
     WARNING = "warning"
@@ -60,5 +63,5 @@ class Alert(BaseModel):
     alert_id: str
     severity: AlertSeverity
     message: str
-    device_id: Optional[str] = None
+    device_id: Optional[str] = None # Reference to DAC 'deviceId'
     timestamp: datetime = Field(default_factory=datetime.utcnow)
