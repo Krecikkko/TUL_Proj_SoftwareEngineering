@@ -1,98 +1,76 @@
-import { rawMetadata } from '../mock_data/rawMetadata';
-
 export function formatAlerts(rawAlerts) {
+  if (!Array.isArray(rawAlerts)) return [];
+
   return rawAlerts.map(alert => {
-    const building = rawMetadata.buildings[alert.buildingId];
-    const sev = rawMetadata.severityConfig[alert.severity];
+    let severityConfig = { label: 'Unknown', color: 'gray', icon: '?' };
+    const severityValue = typeof alert.severity === 'string' ? alert.severity : alert.severity?.label;
+
+    if (severityValue === 'CRITICAL' || severityValue === 'critical') {
+      severityConfig = { label: 'CRITICAL', color: 'red', icon: '!!' };
+    } else if (severityValue === 'WARNING' || severityValue === 'warning') {
+      severityConfig = { label: 'WARNING', color: 'orange', icon: '!' };
+    }
 
     return {
-      id: alert.id,
-      buildingName: building?.name ?? alert.buildingId,
+      id: alert.alert_id || alert.id,
+      buildingName: alert.building_id || "Building-1",
+      severity: severityConfig,
       message: alert.message,
-      time: new Date(alert.timestamp).toLocaleString(),
-      severity: {
-        code: alert.severity,
-        label: sev?.label ?? alert.severity,
-        icon: sev?.icon ?? 'ℹ️',
-        color: sev?.color ?? 'gray',
-      },
+      time: alert.timestamp || alert.time
     };
   });
 }
 
-export function formatMeasurements(rawList, meta) {
-  if(!rawList || rawList.length === 0) return null;
-  const firstPoint = rawList[0];
+export function formatMeasurements(rawData, meta) {
+  if (!Array.isArray(rawData) || rawData.length === 0) return null;
   
-  let metricName = "Measurement";
-  let unitName = "";
-  if(firstPoint.metric === 'temperature') {
-     metricName = "Temperature";
-     unitName = '°C';
-  }
-  if(firstPoint.metric === 'power') {
-    metricName = "Power Consumption";
-    unitName = 'W';
-  }
-  if(firstPoint.metric === 'co2') {
-    metricName = "CO2 Level";
-    unitName = 'ppm';
-  }
-  if(firstPoint.metric === 'humidity') {
-    metricName = "Humidity";
-    unitName = '%';
-  }
+  const first = rawData[0];
+  const unitMap = {
+      "temp_c": "°C",
+      "power_w": "W",
+      "co2_ppm": "ppm",
+      "humidity_pct": "%"
+  };
 
-  const roomInfo = firstPoint.tags?.room ? ` (Room: ${firstPoint.tags.room})` : "";
-  let extraInfo = "";
-  if(meta && meta.devices && meta.devices[firstPoint.device_id]) {
-    const deviceMeta = meta.devices[firstPoint.device_id];
-    extraInfo = ` [Device: ${deviceMeta.model}]`;
-  }
-
+  const values = rawData.map(m => m.value);
+  const labels = rawData.map(m => {
+      const ts = m.timestamp || m.ts;
+      return ts ? new Date(ts).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "";
+  });
 
   return {
-    seriesName: `${metricName}${roomInfo}${extraInfo}`,
-    unit: unitName,
-    labels: rawList.map(item => new Date(item.ts).toLocaleString([], {year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'})),
-    values: rawList.map(item => item.value)
+    seriesName: `Metric: ${first.metric}`,
+    unit: unitMap[first.metric] || '',
+    values: values,
+    labels: labels
   };
 }
 
-export function formatForecasts(raw, meta) {
-  if(!raw || !raw.series) return null;
+// --- POPRAWIONA FUNKCJA (Forecasts) ---
+export function formatForecasts(rawData, meta) {
+  // Sprawdzamy, czy otrzymaliśmy obiekt prognozy z serią danych
+  if (!rawData || !rawData.series || !Array.isArray(rawData.series)) {
+      return null;
+  }
+  
+  // Wyciągamy wartości i etykiety czasowe do osobnych tablic
+  const values = rawData.series.map(point => point.value);
+  const labels = rawData.series.map(point => {
+      const ts = point.timestamp || point.ts;
+      // Formatujemy datę (np. "14:00")
+      return ts ? new Date(ts).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "";
+  });
 
-  let title = "Forecast";
-  let unitName = "";
-  if(raw.type === 'energy_demand') {
-    title = "Predicted energy demand";
-    unitName = "kWh";
-  }
-  if(raw.type === 'temp_setpoint') {
-    title = "Suggested Temperature";
-    unitName = "°C";
-  }
-  if(raw.type === 'price') {
-    title = "Costs forecast";
-    unitName = "PLN/kWh";
-  }
-
-  const algoInfo = raw.algo ? ` (Model: ${raw.algo})` : "";
-
-  let locationInfo = "";
-  if(meta && meta.buildings && meta.buildings[raw.buildingId]) {
-    locationInfo = ` - ${meta.buildings[raw.buildingId].name}`;
-  }
-  if(raw.roomId) {
-    locationInfo += ` (Room: ${raw.roomId})`;
-  }
-
+  // Skalujemy wartości, aby wykres był czytelny (backend wysyła duże liczby, np. 3000 kW)
+  // W realnej aplikacji lepiej skalować to dynamicznie w komponencie widoku,
+  // ale tutaj dla uproszczenia zwracamy surowe wartości, a widok ma swoje skalowanie.
+  
   return {
-    seriesName: `${title}${algoInfo}${locationInfo}`,
-    unit: unitName,
-    horizon: raw.horizon,
-    labels: raw.series.map(item => new Date(item.ts).toLocaleString([], {year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'})),
-    values: raw.series.map(item => item.value),
-    confidence: raw.series.map(item => item.conf ?? null)
+      seriesName: `Forecast: ${rawData.type || 'Unknown'}`,
+      horizon: rawData.horizon || '24h',
+      unit: "kW", // Mock generuje "energy_demand", więc kW
+      values: values,
+      labels: labels,
+      confidence: [] // Mock nie generuje pewności, zostawiamy puste
   };
 }
