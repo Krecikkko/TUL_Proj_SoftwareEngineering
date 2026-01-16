@@ -3,34 +3,47 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime
 from enum import Enum
 
-# --- 1. MEASUREMENT MODELS ---
-# Matches DAC 'Measurement' Document
-class MeasurementReading(BaseModel):
-    id: Optional[str] = Field(None, alias="_id") # Beanie adds this automatically
-    deviceId: str
+# --- 1. DAC INPUT MODELS (Matches DAC Interface) ---
+# We use these to READ from the database
+class Measurement(BaseModel):
+    id: str
+    device_id: str
     metric: str
     value: float
-    ts: datetime
+    timestamp: datetime
     tags: Optional[Dict[str, Any]] = None
 
-    class Config:
-        populate_by_name = True
-
-# --- 2. FORECAST MODELS ---
-# Matches DAC 'Forecast' Document
 class Forecast(BaseModel):
-    id: Optional[str] = Field(None, alias="_id")
-    type: str               # "energy_demand", "price"
-    horizon: str            # "1H", "1D"
+    id: str
+    type: str
+    horizon: str
     issued_at: datetime
-    requested_by: str       # UUID
-    series_item: List[Dict[str, Any]] # [{ts, value, conf}, ...]
-    valid_for: Dict[str, datetime]    # {from, to}
-    model_meta: Dict[str, str]        # {algo, ver}
+    requested_by: str
+    series_item: List[Dict[str, Any]] 
+    valid_for: Dict[str, datetime]    
+    model_meta: Dict[str, str]       
     scope: Optional[Dict[str, str]] = None
 
+# --- 2. FRONTEND OUTPUT MODELS (Matches React App) ---
+# We use these to SEND to the frontend (Translation Layer)
+
+class MeasurementResponse(BaseModel):
+    # React expects 'ts', DAC gives 'timestamp'
+    ts: datetime
+    value: float
+    metric: str
+    device_id: str
+    buildingId: str # React expects camelCase here
+
+class ForecastResponse(BaseModel):
+    # React expects 'series', DAC gives 'series_item'
+    buildingId: str
+    type: str
+    horizon: str
+    series: List[Dict[str, Any]]
+    algo: Optional[str] = None
+
 # --- 3. CORE MODELS ---
-# Matches DAC 'User' Document
 class UserRole(str, Enum):
     ADMIN = "admin"
     MAINTENANCE = "maintenance"
@@ -44,24 +57,17 @@ class User(BaseModel):
     full_name: str
     email: Optional[str] = None
 
-# Matches DAC 'Device' Document (Metadata)
-class DeviceMetadata(BaseModel):
-    device_id: str
-    building_id: str
-    room_id: Optional[str] = None
-    type: str
-    status: str
-
-# --- 4. ALERT MODELS (AAC Specific) ---
-# These remain yours, but references must match DAC IDs
+# --- 4. ALERT MODELS ---
+# UPDATED: Matches 'rawAlerts.js' and 'AlertsPage.jsx'
 class AlertSeverity(str, Enum):
-    CRITICAL = "critical"
-    WARNING = "warning"
-    INFO = "info"
+    HIGH = "HIGH"      # Red
+    MEDIUM = "MEDIUM"  # Orange
+    LOW = "LOW"        # Green
 
 class Alert(BaseModel):
-    alert_id: str
+    id: str
+    building_id: str    # Required for frontend filtering
     severity: AlertSeverity
     message: str
-    device_id: Optional[str] = None # Reference to DAC 'deviceId'
+    device_id: Optional[str] = None
     timestamp: datetime = Field(default_factory=datetime.utcnow)
