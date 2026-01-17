@@ -107,6 +107,11 @@ async function fetchForecasts(query) {
 	  if (query.fromDate) {
         url.searchParams.append("start", query.fromDate); 
     }
+    if (query.toDate) {
+        url.searchParams.append("end", query.toDate);
+    }
+    url.searchParams.append("type", query.type || "temperature");
+
     
     const response = await fetch(url);
     if (!response.ok) return null;
