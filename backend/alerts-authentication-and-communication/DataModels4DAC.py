@@ -3,7 +3,6 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime
 from enum import Enum
 
-# --- 1. DAC INPUT MODELS (Matches DAC Interface) ---
 class Measurement(BaseModel):
     id: str
     device_id: str
@@ -23,7 +22,6 @@ class Forecast(BaseModel):
     model_meta: Dict[str, str]       
     scope: Optional[Dict[str, str]] = None
 
-# --- 2. FRONTEND OUTPUT MODELS ---
 class MeasurementResponse(BaseModel):
     ts: datetime
     value: float
@@ -38,7 +36,6 @@ class ForecastResponse(BaseModel):
     series: List[Dict[str, Any]]
     algo: Optional[str] = None
 
-# --- 3. CORE MODELS ---
 class UserRole(str, Enum):
     ADMIN = "admin"
     MAINTENANCE = "maintenance"
@@ -60,16 +57,14 @@ class DeviceMetadata(BaseModel):
     room_id: Optional[str] = None
     status: str
 
-# --- 4. ALERT MODELS (UPDATED FOR ISSUE 1) ---
 class AlertSeverity(str, Enum):
-    # Matches rawMetadata.js config
     HIGH = "HIGH"
     MEDIUM = "MEDIUM"
     LOW = "LOW"
 
 class Alert(BaseModel):
     id: str
-    building_id: str    # Required for frontend filtering
+    building_id: str
     severity: AlertSeverity
     message: str
     device_id: Optional[str] = None

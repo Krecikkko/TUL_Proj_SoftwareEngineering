@@ -13,7 +13,6 @@ class MockCoreDb(ICoreDb):
             return User(
                 _id="u_1", 
                 username="admin",
-                # UPDATED: Matches the plain text password from 'test_system.py'
                 password_hash="secret", 
                 role=UserRole.ADMIN,
                 full_name="System Administrator",

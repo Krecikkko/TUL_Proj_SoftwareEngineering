@@ -13,7 +13,6 @@ class IForecastRead(ABC):
         horizon: str
     ) -> Optional[Forecast]: pass
 
-    # NEW METHOD: Matches dac_repository.py signature
     @abstractmethod
     async def get_forecasts_in_range(
         self,
@@ -30,7 +29,6 @@ class MockForecastRepository(IForecastRead):
         forecast_type: str, 
         horizon: str
     ) -> Optional[Forecast]:
-        # Reuse the generation logic
         return (await self.get_forecasts_in_range(building_id, datetime.utcnow(), datetime.utcnow(), forecast_type))[0]
 
     async def get_forecasts_in_range(
@@ -40,13 +38,10 @@ class MockForecastRepository(IForecastRead):
         end_date: datetime,
         forecast_type: Optional[str] = None
     ) -> List[Forecast]:
-        
-        # Simulate finding 2 forecasts in the requested range
         results = []
         for i in range(2):
             issued_time = start_date + timedelta(days=i)
             
-            # Generate dummy series data relative to issued_time
             series_data = []
             for h in range(24):
                 series_data.append({

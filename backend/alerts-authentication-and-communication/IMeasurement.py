@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 from datetime import datetime, timedelta
 import random
-# Import 'Measurement' (new name) instead of 'MeasurementReading'
 from DataModels4DAC import Measurement
 
 class IMeasurement(ABC):
@@ -27,7 +26,6 @@ class MockMeasurementRepository(IMeasurement):
     ) -> List[Measurement]:
         
         readings = []
-        # Generate 5 data points for the requested range
         for i in range(5):
             ts = end_date - timedelta(hours=i)
             val = 0.0
