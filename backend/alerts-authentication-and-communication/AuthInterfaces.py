@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
 from typing import List, Optional
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
+from jose import JWTError, jwt  # Requires: pip install python-jose
 
 # IMPORTS
 from IMeasurement import IMeasurement, MockMeasurementRepository
@@ -10,8 +12,17 @@ from ICoreDb import ICoreDb, MockCoreDb
 from IForecastRead import IForecastRead, MockForecastRepository
 from DataModels4DAC import (
     UserRole, Alert, AlertSeverity, Measurement, 
-    MeasurementResponse, ForecastResponse, Forecast
+    MeasurementResponse, ForecastResponse, Forecast, User
 )
+
+# --- CONFIGURATION ---
+# In production, these should come from os.environ
+SECRET_KEY = "my_super_secure_secret_key_for_emsib_project"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+# OAuth2 scheme tells FastAPI to look for 'Authorization: Bearer <token>' header
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/gateway/login")
 
 # --- FRONTEND CONTRACTS ---
 class UserLogin(BaseModel):
@@ -29,18 +40,29 @@ class DashboardData(BaseModel):
     active_alerts_count: int
     forecast_summary: str
 
+# --- AUTH HELPER FUNCTIONS ---
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
 # --- AAC SERVICE INTERFACE ---
 class IAccessControlAndCommunication(ABC):
     @abstractmethod
     async def login_user(self, credentials: UserLogin) -> AuthToken: pass
     
-    # UPDATED: Added buildingId parameter (Removed Hardcoded "B1")
+    # UPDATED: Methods now take a validated 'User' object, not a raw token string
     @abstractmethod
-    async def get_dashboard_view(self, user_token: str, buildingId: str) -> DashboardData: pass
+    async def get_dashboard_view(self, current_user: User, buildingId: str) -> DashboardData: pass
     
     @abstractmethod
     async def get_system_alerts(
-        self, user_token: str, buildingId: str, fromDate: datetime, toDate: datetime
+        self, current_user: User, buildingId: str, fromDate: datetime, toDate: datetime
     ) -> List[Alert]: pass
     
     @abstractmethod
@@ -64,40 +86,48 @@ class AACImplementation(IAccessControlAndCommunication):
     async def login_user(self, credentials: UserLogin) -> AuthToken:
         user = await self.core_db.get_user_by_username(credentials.username)
         
-        # UPDATED: Logic now uses DB data instead of hardcoded "secret" string
-        # Checks if user exists AND if password matches the hash in DB
+        # 1. VERIFY CREDENTIALS
         if not user or credentials.password != user.password_hash:
-            raise HTTPException(status_code=401, detail="Invalid credentials")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect username or password",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
             
+        # 2. GENERATE TOKEN (If successful)
+        # We store the username and role inside the token
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={"sub": user.username, "role": user.role.value},
+            expires_delta=access_token_expires
+        )
+        
         return AuthToken(
-            access_token=f"token_for_{user.username}", 
+            access_token=access_token, 
             token_type="bearer", 
             role=user.role.value
         )
 
-    # UPDATED: Accepts buildingId dynamic argument [Fixes Issue 3]
-    async def get_dashboard_view(self, user_token: str, buildingId: str) -> DashboardData:
-        # Defaults for the dashboard view (Logic, not data)
+    async def get_dashboard_view(self, current_user: User, buildingId: str) -> DashboardData:
+        # Example Authorization Check:
+        # if current_user.role != UserRole.ADMIN: raise HTTPException(...)
+        
         end = datetime.utcnow()
         start = end - timedelta(hours=24)
         
-        # 1. Fetch Power using dynamic buildingId
         power_metrics = await self.meas_db.get_measurements(buildingId, "power_w", start, end)
         current_power = sum(m.value for m in power_metrics)
         
-        # 2. Fetch Temp using dynamic buildingId
         temp_metrics = await self.meas_db.get_measurements(buildingId, "temp_c", start, end)
         avg_temp = sum(m.value for m in temp_metrics) / len(temp_metrics) if temp_metrics else 0.0
 
-        # 3. Fetch Forecast using dynamic buildingId
         forecast = await self.fore_db.get_latest_forecast(buildingId, "energy_demand", "1D")
         summary = "No data"
         if forecast and forecast.series_item:
             val = int(forecast.series_item[0]["value"])
             summary = f"Demand expected to reach {val} kW."
             
-        # 4. Fetch Alerts using dynamic buildingId
-        alerts = await self.get_system_alerts(user_token, buildingId, start, end)
+        alerts = await self.get_system_alerts(current_user, buildingId, start, end)
         
         return DashboardData(
             current_power_usage=round(current_power, 2),
@@ -107,8 +137,9 @@ class AACImplementation(IAccessControlAndCommunication):
         )
 
     async def get_system_alerts(
-        self, user_token: str, buildingId: str, fromDate: datetime, toDate: datetime
+        self, current_user: User, buildingId: str, fromDate: datetime, toDate: datetime
     ) -> List[Alert]:
+        
         generated_alerts = []
         temps = await self.meas_db.get_measurements(buildingId, "temp_c", fromDate, toDate)
         for m in temps:
@@ -168,7 +199,8 @@ class AACImplementation(IAccessControlAndCommunication):
             ))
         return response_list
 
-# --- ROUTER CONFIGURATION ---
+# --- DEPENDENCY INJECTION ---
+
 async def get_aac_service():
     return AACImplementation(
         measurement_db=MockMeasurementRepository(),
@@ -176,31 +208,60 @@ async def get_aac_service():
         forecast_db=MockForecastRepository()
     )
 
+# NEW: Security Dependency (The "Guard")
+async def get_current_user(
+    token: str = Depends(oauth2_scheme), 
+    svc: AACImplementation = Depends(get_aac_service)
+) -> User:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        # Decode and Verify Token
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    
+    # Fetch User from DB to ensure they still exist/haven't been banned
+    user = await svc.core_db.get_user_by_username(username)
+    if user is None:
+        raise credentials_exception
+    return user
+
+# --- ROUTER CONFIGURATION ---
 router = APIRouter(prefix="/api/v1/gateway", tags=["AAC Gateway"])
 
 @router.post("/login")
 async def login(creds: UserLogin, svc: IAccessControlAndCommunication = Depends(get_aac_service)):
     return await svc.login_user(creds)
 
-# UPDATED: Added buildingId query parameter
+# PROTECTED ROUTES: Note 'current_user' is now required!
+
 @router.get("/dashboard")
 async def dashboard(
-    token: str, 
     buildingId: str, 
+    current_user: User = Depends(get_current_user), # Token is extracted from Header automatically
     svc: IAccessControlAndCommunication = Depends(get_aac_service)
 ):
-    return await svc.get_dashboard_view(token, buildingId)
+    return await svc.get_dashboard_view(current_user, buildingId)
 
 @router.get("/alerts")
 async def alerts(
-    token: str, buildingId: str, fromDate: datetime, toDate: datetime, 
+    buildingId: str, fromDate: datetime, toDate: datetime, 
+    current_user: User = Depends(get_current_user),
     svc: IAccessControlAndCommunication = Depends(get_aac_service)
 ):
-    return await svc.get_system_alerts(token, buildingId, fromDate, toDate)
+    return await svc.get_system_alerts(current_user, buildingId, fromDate, toDate)
 
 @router.get("/measurements")
 async def get_measurements(
     buildingId: str, metric: str, fromDate: datetime, toDate: datetime, deviceId: Optional[str] = None,
+    current_user: User = Depends(get_current_user), # Authentication required
     svc: IAccessControlAndCommunication = Depends(get_aac_service)
 ):
     return await svc.get_measurements_view(buildingId, metric, fromDate, toDate, deviceId)
@@ -208,6 +269,7 @@ async def get_measurements(
 @router.get("/forecasts")
 async def get_forecasts(
     buildingId: str, type: str, fromDate: datetime, toDate: datetime,
+    current_user: User = Depends(get_current_user), # Authentication required
     svc: IAccessControlAndCommunication = Depends(get_aac_service)
 ):
     return await svc.get_forecasts_view(buildingId, type, fromDate, toDate)
