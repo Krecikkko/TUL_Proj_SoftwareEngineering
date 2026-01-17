@@ -45,6 +45,13 @@ async function fetchMeasurements(query) {
     url.searchParams.append("token", token);
     url.searchParams.append("buildingId", query.buildingId || "Building-1");
     
+    if (query.fromDate) {
+        url.searchParams.append("start", query.fromDate);
+    }
+    if (query.toDate) {
+        url.searchParams.append("end", query.toDate);
+    }
+
     // Mapowanie nazw metryk (Frontend -> Backend)
     const metricMap = {
         "temperature": "temp_c",
@@ -98,6 +105,10 @@ async function fetchForecasts(query) {
     const url = new URL(`${API_BASE_URL}/forecasts`);
     url.searchParams.append("token", token);
     url.searchParams.append("buildingId", query.buildingId || "Building-1");
+    
+	  if (query.fromDate) {
+        url.searchParams.append("start", query.fromDate); 
+    }
     
     const response = await fetch(url);
     if (!response.ok) return null;
