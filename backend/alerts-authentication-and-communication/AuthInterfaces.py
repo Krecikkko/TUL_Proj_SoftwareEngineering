@@ -211,12 +211,14 @@ async def alerts(token: str, svc: IAccessControlAndCommunication = Depends(get_a
 # NEW ENDPOINTS FOR DATA VIZ
 @router.get("/measurements")
 async def get_measurements(
-    buildingId: str, 
-    metric: str, 
-    fromDate: datetime, 
-    toDate: datetime, 
-    deviceId: Optional[str] = None,
-    svc: IAccessControlAndCommunication = Depends(get_aac_service)
+    token: str = Query(...), 
+    buildingId: str = Query("Building-1"),
+    metric: str = Query(...),
+    # frontend wysyla start/end, wiec robimy aliasy
+    fromDate: Optional[datetime] = Query(None, alias="start"),
+    toDate: Optional[datetime] = Query(None, alias="end"),
+    deviceId: Optional[str] = Query(None),
+    svc: IAccessControlAndCommunication = Depends(get_aac_service),
 ):
     return await svc.get_measurements_view(buildingId, metric, fromDate, toDate, deviceId)
 
