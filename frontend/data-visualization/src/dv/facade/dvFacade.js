@@ -45,12 +45,10 @@ async function fetchMeasurements(query) {
     url.searchParams.append("token", token);
     url.searchParams.append("buildingId", query.buildingId || "Building-1");
     
-    if (query.fromDate) {
-        url.searchParams.append("start", query.fromDate);
-    }
-    if (query.toDate) {
-        url.searchParams.append("end", query.toDate);
-    }
+    const from = query.fromDate ?? "2026-01-01T00:00:00";
+    const to   = query.toDate   ?? "2026-01-30T23:59:59";
+    url.searchParams.append("start", from);
+    url.searchParams.append("end", to);
 
     // Mapowanie nazw metryk (Frontend -> Backend)
     const metricMap = {
