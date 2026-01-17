@@ -1,11 +1,10 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 import random
-from typing import Optional
+from typing import List, Optional
 from DataModels4DAC import Forecast
 
 class IForecastRead(ABC):
-    # Matches signature in dac_repository.py
     @abstractmethod
     async def get_latest_forecast(
         self, 
@@ -14,6 +13,16 @@ class IForecastRead(ABC):
         horizon: str
     ) -> Optional[Forecast]: pass
 
+    # NEW METHOD: Matches dac_repository.py signature
+    @abstractmethod
+    async def get_forecasts_in_range(
+        self,
+        building_id: str,
+        start_date: datetime,
+        end_date: datetime,
+        forecast_type: Optional[str] = None
+    ) -> List[Forecast]: pass
+
 class MockForecastRepository(IForecastRead):
     async def get_latest_forecast(
         self, 
@@ -21,25 +30,41 @@ class MockForecastRepository(IForecastRead):
         forecast_type: str, 
         horizon: str
     ) -> Optional[Forecast]:
+        # Reuse the generation logic
+        return (await self.get_forecasts_in_range(building_id, datetime.utcnow(), datetime.utcnow(), forecast_type))[0]
+
+    async def get_forecasts_in_range(
+        self,
+        building_id: str,
+        start_date: datetime,
+        end_date: datetime,
+        forecast_type: Optional[str] = None
+    ) -> List[Forecast]:
         
-        now = datetime.utcnow()
-        # DAC stores data in 'series_item' list of dicts
-        series_data = []
-        for i in range(24):
-            series_data.append({
-                "ts": now + timedelta(hours=i),
-                "value": random.uniform(1000, 5000),
-                "conf": 0.95
-            })
+        # Simulate finding 2 forecasts in the requested range
+        results = []
+        for i in range(2):
+            issued_time = start_date + timedelta(days=i)
             
-        return Forecast(
-            id="fc_repo_123",
-            type=forecast_type,
-            horizon=horizon,
-            issued_at=now,
-            requested_by="req_user_1",
-            series_item=series_data, # Matches DAC field name
-            valid_for={"from": now, "to": now + timedelta(hours=24)},
-            model_meta={"algo": "XGBoost", "ver": "1.0"},
-            scope={"buildingId": building_id}
-        )
+            # Generate dummy series data relative to issued_time
+            series_data = []
+            for h in range(24):
+                series_data.append({
+                    "ts": issued_time + timedelta(hours=h),
+                    "value": random.uniform(2000, 4500),
+                    "conf": 0.90
+                })
+
+            results.append(Forecast(
+                id=f"fc_hist_{i}",
+                type=forecast_type or "energy_demand",
+                horizon="1D",
+                issued_at=issued_time,
+                requested_by="req_mock",
+                series_item=series_data,
+                valid_for={"from": issued_time, "to": issued_time + timedelta(days=1)},
+                model_meta={"algo": "XGBoost", "ver": "2.0"},
+                scope={"buildingId": building_id}
+            ))
+            
+        return results

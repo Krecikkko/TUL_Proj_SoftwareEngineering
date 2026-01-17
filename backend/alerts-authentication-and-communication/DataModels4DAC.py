@@ -4,7 +4,6 @@ from datetime import datetime
 from enum import Enum
 
 # --- 1. DAC INPUT MODELS (Matches DAC Interface) ---
-# We use these to READ from the database
 class Measurement(BaseModel):
     id: str
     device_id: str
@@ -24,19 +23,15 @@ class Forecast(BaseModel):
     model_meta: Dict[str, str]       
     scope: Optional[Dict[str, str]] = None
 
-# --- 2. FRONTEND OUTPUT MODELS (Matches React App) ---
-# We use these to SEND to the frontend (Translation Layer)
-
+# --- 2. FRONTEND OUTPUT MODELS ---
 class MeasurementResponse(BaseModel):
-    # React expects 'ts', DAC gives 'timestamp'
     ts: datetime
     value: float
     metric: str
     device_id: str
-    buildingId: str # React expects camelCase here
+    buildingId: str 
 
 class ForecastResponse(BaseModel):
-    # React expects 'series', DAC gives 'series_item'
     buildingId: str
     type: str
     horizon: str
@@ -57,12 +52,20 @@ class User(BaseModel):
     full_name: str
     email: Optional[str] = None
 
-# --- 4. ALERT MODELS ---
-# UPDATED: Matches 'rawAlerts.js' and 'AlertsPage.jsx'
+class DeviceMetadata(BaseModel):
+    id: str
+    device_id: str
+    type: str
+    building_id: str
+    room_id: Optional[str] = None
+    status: str
+
+# --- 4. ALERT MODELS (UPDATED FOR ISSUE 1) ---
 class AlertSeverity(str, Enum):
-    HIGH = "HIGH"      # Red
-    MEDIUM = "MEDIUM"  # Orange
-    LOW = "LOW"        # Green
+    # Matches rawMetadata.js config
+    HIGH = "HIGH"
+    MEDIUM = "MEDIUM"
+    LOW = "LOW"
 
 class Alert(BaseModel):
     id: str

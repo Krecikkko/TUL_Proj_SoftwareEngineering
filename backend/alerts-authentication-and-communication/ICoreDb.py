@@ -14,9 +14,11 @@ class MockCoreDb(ICoreDb):
             return User(
                 _id="u_1", 
                 username="admin",
-                password_hash="hashed_secret",
+                # UPDATED: Matches the input password used in 'test_system.py'
+                # This allows us to remove the hardcoded "secret" from the Service logic.
+                password_hash="secret", 
                 role=UserRole.ADMIN,
                 full_name="System Administrator",
-                email="admin@system.com" # Required by new model
+                email="admin@system.com"
             )
         return None
