@@ -214,9 +214,8 @@ async def get_measurements(
     token: str = Query(...), 
     buildingId: str = Query("Building-1"),
     metric: str = Query(...),
-    # frontend wysyla start/end, wiec robimy aliasy
-    fromDate: Optional[datetime] = Query(None, alias="start"),
-    toDate: Optional[datetime] = Query(None, alias="end"),
+    fromDate: datetime = Query(None, alias="start"),
+    toDate: datetime = Query(None, alias="end"),
     deviceId: Optional[str] = Query(None),
     svc: IAccessControlAndCommunication = Depends(get_aac_service),
 ):
@@ -224,10 +223,11 @@ async def get_measurements(
 
 @router.get("/forecasts")
 async def get_forecasts(
-    buildingId: str, 
-    type: str, 
-    fromDate: datetime, 
-    toDate: datetime,
-    svc: IAccessControlAndCommunication = Depends(get_aac_service)
+    token: str = Query(...),
+    buildingId: str = Query("Building-1"),
+    type: str = Query("temperature"),  # Frontend nie wysyla typu ? 
+    fromDate: Optional[datetime] = Query(None, alias="start"),
+    toDate: Optional[datetime] = Query(None, alias="end"),
+    svc: IAccessControlAndCommunication = Depends(get_aac_service),
 ):
     return await svc.get_forecasts_view(buildingId, type, fromDate, toDate)
