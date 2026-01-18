@@ -1,72 +1,102 @@
-import React from 'react';
-import './AdminDashboard.css'; // Import stylów
+import React, { useEffect, useState } from 'react';
+import './AdminDashboard.css';
 import EnergyChartWidget from './components/EnergyChartWidget';
 import AlertsWidget from './components/AlertsWidget';
+// Upewnij się, że ścieżka do fasady jest poprawna w Twoim projekcie!
+import { getDashboardStats } from '../../data-visualization/src/dv/facade/dvFacade';
 
 const AdminDashboard = () => {
+    const [stats, setStats] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            // Pobieramy dane KPI dla budynku B1
+            const data = await getDashboardStats("B1");
+            if (data) setStats(data);
+            setLoading(false);
+        };
+        fetchData();
+    }, []);
+
+    // Pobieramy rolę z localStorage, jeśli brak - wyświetlamy ogólną nazwę
+    const role = localStorage.getItem('userRole') || 'Administrator';
+
     return (
         <div className="admin-layout">
-
-            {/* LEWY SIDEBAR */}
             <aside className="admin-sidebar">
                 <div className="sidebar-brand">ADMIN</div>
                 <nav>
-                    <a href="#" className="nav-item active">Dashboard</a>
-                    <a href="#" className="nav-item">Energy Goals</a>
-                    <a href="#" className="nav-item">Users</a>
+                    {/* Tylko Overview, bo tylko to mamy w danych */}
+                    <a href="#" className="nav-item active">Overview</a>
                 </nav>
             </aside>
 
-            {/* GŁÓWNA TREŚĆ */}
             <main className="admin-content">
-
-                {/* Nagłówek */}
                 <div className="top-bar">
                     <h1 className="page-title">Building Management Panel</h1>
-                    <span className="user-info">Logged In: Alicja (Administrator)</span>
+                    <span className="user-info">
+                        Logged In: <strong style={{textTransform: 'capitalize'}}>{role}</strong>
+                    </span>
                 </div>
 
-                {/* Grid z kartami (3 kafelki) */}
+                {/* KPI CARDS */}
                 <div className="cards-grid">
-                    {/* Karta 1 */}
                     <div className="kpi-card">
-                        <div className="kpi-label">TODAY'S CONSUMPTION</div>
-                        <div className="kpi-value">450 kWh</div>
+                        <div className="kpi-label">CURRENT POWER</div>
+                        <div className="kpi-value" style={{ color: '#2563eb' }}>
+                            {loading ? "..." : stats?.current_power_usage ?? "--"} <span style={{fontSize: '1rem'}}>W</span>
+                        </div>
                         <div style={{ color: '#22c55e', fontSize: '0.9rem', fontWeight: 'bold', marginTop: '5px' }}>
-                            ▼ 5% vs yesterday
+                            Live Measurement
                         </div>
                     </div>
 
-                    {/* Karta 2 */}
                     <div className="kpi-card">
-                        <div className="kpi-label">ESTIMATED COST</div>
-                        <div className="kpi-value">$ 320.00</div>
+                        <div className="kpi-label">AVG TEMP</div>
+                        <div className="kpi-value" style={{ color: '#f59e0b' }}>
+                            {loading ? "..." : stats?.temperature_avg ?? "--"} <span style={{fontSize: '1rem'}}>°C</span>
+                        </div>
                         <div style={{ color: '#6b7280', fontSize: '0.9rem', marginTop: '5px' }}>
-                            Day Tariff
+                            Building Average
                         </div>
                     </div>
 
-                    {/* Karta 3 */}
                     <div className="kpi-card">
-                        <div className="kpi-label">CO2 REDUCTION GOAL</div>
-                        <div className="kpi-value">85%</div>
+                        <div className="kpi-label">ACTIVE ALERTS</div>
+                        <div className="kpi-value" style={{ color: '#dc2626' }}>
+                            {loading ? "..." : stats?.active_alerts_count ?? "0"}
+                        </div>
                         <div className="progress-bar-bg">
-                            <div className="progress-bar-fill" style={{ width: '85%' }}></div>
+                            <div
+                                className="progress-bar-fill"
+                                style={{
+                                    width: stats?.active_alerts_count > 0 ? '40%' : '100%',
+                                    background: stats?.active_alerts_count > 0 ? '#dc2626' : '#22c55e'
+                                }}
+                            ></div>
                         </div>
                     </div>
                 </div>
 
-                {/* Sekcja Wykresu */}
-                <div className="chart-placeholder-box" style={{ display: 'block', height: 'auto' }}>
+                {/* AI SUMMARY */}
+                {stats?.forecast_summary && (
+                    <div style={{ background: '#e0f2fe', padding: '15px', borderRadius: '12px', marginBottom: '20px', color: '#0369a1', borderLeft: '5px solid #0ea5e9' }}>
+                        <strong>AI Forecast:</strong> {stats.forecast_summary}
+                    </div>
+                )}
+
+                {/* CHART WIDGET */}
+                <div className="chart-placeholder-box" style={{ display: 'block', height: 'auto', marginBottom: '20px' }}>
+                    <h3 style={{marginTop: 0, color: '#475569', fontSize: '1rem', textTransform: 'uppercase'}}>Energy Consumption</h3>
                     <EnergyChartWidget />
                 </div>
 
-                {/* Tabela Aktywności */}
+                {/* ALERTS WIDGET */}
                 <div className="table-section">
                     <div className="kpi-label">RECENT SYSTEM ALERTS</div>
                     <AlertsWidget />
                 </div>
-
             </main>
         </div>
     );
