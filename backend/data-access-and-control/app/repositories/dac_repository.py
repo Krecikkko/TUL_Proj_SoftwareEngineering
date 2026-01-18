@@ -147,7 +147,7 @@ class DataAccessGateway(IMeasurement, IForecastRead, IForecastWrite, ICoreDb):
     # =========================================================
     
     async def get_building(self, building_id: str) -> Optional[BuildingMetadata]:
-        return None 
+        return  None
 
     async def get_devices(self, building_id: str, device_type: Optional[str] = None, status: Optional[str] = "active") -> List[DeviceMetadata]:
         return []

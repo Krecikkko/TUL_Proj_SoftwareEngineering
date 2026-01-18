@@ -241,16 +241,23 @@ async def alerts(
 
 @router.get("/measurements")
 async def get_measurements(
-    buildingId: str, metric: str, fromDate: datetime, toDate: datetime, deviceId: Optional[str] = None,
-    current_user: User = Depends(get_current_user),
-    svc: IAccessControlAndCommunication = Depends(get_aac_service)
+    token: str = Query(...), 
+    buildingId: str = Query("Building-1"),
+    metric: str = Query(...),
+    fromDate: datetime = Query(None, alias="start"),
+    toDate: datetime = Query(None, alias="end"),
+    deviceId: Optional[str] = Query(None),
+    svc: IAccessControlAndCommunication = Depends(get_aac_service),
 ):
     return await svc.get_measurements_view(buildingId, metric, fromDate, toDate, deviceId)
 
 @router.get("/forecasts")
 async def get_forecasts(
-    buildingId: str, type: str, fromDate: datetime, toDate: datetime,
-    current_user: User = Depends(get_current_user),
-    svc: IAccessControlAndCommunication = Depends(get_aac_service)
+    token: str = Query(...),
+    buildingId: str = Query("Building-1"),
+    type: str = Query("temperature"),  # Frontend nie wysyla typu ? 
+    fromDate: Optional[datetime] = Query(None, alias="start"),
+    toDate: Optional[datetime] = Query(None, alias="end"),
+    svc: IAccessControlAndCommunication = Depends(get_aac_service),
 ):
     return await svc.get_forecasts_view(buildingId, type, fromDate, toDate)

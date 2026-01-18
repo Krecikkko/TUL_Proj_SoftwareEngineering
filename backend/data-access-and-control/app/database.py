@@ -20,3 +20,6 @@ async def init_db(uri: str):
             Forecast
         ]
     )
+
+
+
