@@ -1,43 +1,43 @@
 import asyncio
 import os
+import uvicorn
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
 from dotenv import load_dotenv
+
 from app.database import init_db
-from app.repositories.dac_repository import DataAccessGateway
+from app.api.routes import router as dac_router
+#from app.repositories.dac_repository import DataAccessGateway
 
-async def main():
-    """
-    Main entry point for the Data Access and Control (DAC) Module.
-    This script verifies configuration and database connectivity.
-    """
-    print("--- 🚀 Starting DAC Module ---")
-
-    # 1. Load Environment Variables
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     load_dotenv()
     uri = os.getenv("MONGO_URI")
-    
+
     if not uri:
-        print("❌ Error: MONGO_URI not found in .env file.")
-        return
+        print("Error: MONGO_URI not found in .env file")
+    else:
+        try:
+            await init_db(uri)
+            print("Database connection: ESTABLISHED")
+        except Exception as e:
+            print(f"Database connection: FAILED ({e})")
 
-    # 2. Initialize Database Connection
-    try:
-        await init_db(uri)
-        print("✅ Database Connection: ESTABLISHED")
-    except Exception as e:
-        print(f"❌ Database Connection: FAILED ({e})")
-        return
+    yield 
 
-    # 3. Initialize the Gateway (Your Core Component)
-    try:
-        dac = DataAccessGateway()
-        print("✅ Data Access Gateway: INITIALIZED")
-        print("   (Ready to serve IMeasurement, IForecastRead, IForecastWrite, ICoreDb)")
-    except Exception as e:
-        print(f"❌ Data Access Gateway: ERROR ({e})")
-        return
+app = FastAPI(
+    title = "Data Access and Control API", 
+    description = "API for accessing Measurements, Forecasts and Core Data", 
+    version = "1.0.0", 
+    lifespan = lifespan
+)
 
-    print("--- System Online and Waiting ---")
+app.include_router(dac_router, prefix="/api/v1")
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok", "component": "Data Access and Control"}
 
 if __name__ == "__main__":
-    # This ensures the code runs only when you execute 'python -m app.main'
-    asyncio.run(main())
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+
