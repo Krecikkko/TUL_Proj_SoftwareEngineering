@@ -58,7 +58,7 @@ export function ForecastsPage() {
             Forecast type: <br/>
             <select name="type" onChange={change} value={form.type}>
                 <option value="energy_demand">Energy Demand</option>
-                <option value="temp_setpoint">Temperatue</option>
+                <option value="temp_setpoint">Temperature</option>
                 <option value="price">Price</option>
             </select>
         </label>

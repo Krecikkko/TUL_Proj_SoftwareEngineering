@@ -1,6 +1,5 @@
 import { validate, normalize } from '../validators/inputValidator';
 import { formatAlerts, formatForecasts, formatMeasurements } from '../formatters/dataFormatter';
-import { rawMetadata } from '../mock_data/rawMetadata';
 
 const API_BASE_URL = "http://127.0.0.1:8000/api/v1/gateway";
 
