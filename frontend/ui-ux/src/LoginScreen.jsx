@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { loginUser } from '../../data-visualization/src/dv/facade/dvFacade';
 import './LoginScreen.css';
 
 const LoginScreen = () => {
@@ -18,22 +19,22 @@ const LoginScreen = () => {
         e.preventDefault();
         setError('');
         setIsLoading(true);
-
-        setTimeout(() => {
-            // Logowanie po USERNAME (zgodnie z backendem)
-            if (username === 'admin' && password === '1234') {
-                localStorage.setItem('userRole', 'admin');
-                navigate('/admin');
-            }
-            else if (username === 'user' && password === '1234') {
-                localStorage.setItem('userRole', 'user');
-                navigate('/user');
-            }
-            else {
-                setError('Invalid username or password. Try: admin / 1234');
+        loginUser(username, password).then(response => {
+            if (response.status === 'ok') {
+                if (response.role === 'admin') {
+                    navigate('/admin');
+                } else {
+                    navigate('/user');
+                }
+            } else {
+                setError(response.message || 'Login failed. Please try again.');
             }
             setIsLoading(false);
-        }, 1500);
+        }).catch(() => {
+            setError('Server connection failed. Please try again later.');
+            setIsLoading(false);
+        });
+        
     };
 
     return (

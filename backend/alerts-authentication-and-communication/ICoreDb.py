@@ -7,6 +7,11 @@ class ICoreDb(ABC):
     async def get_user_by_username(self, username: str) -> Optional[User]:
         pass
 
+class RealCoreDb(ICoreDb):
+    async def get_user_by_username(self, username: str) -> Optional[User]:
+        # Implementation to fetch user from the real database
+        pass
+
 class MockCoreDb(ICoreDb):
     async def get_user_by_username(self, username: str) -> Optional[User]:
         if username == "admin":
