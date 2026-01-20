@@ -8,7 +8,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 
+from app.config import settings
 from app.schemas.dac_interfaces import MockDAC
+from app.services.dac_client import DACHttpClient
 from app.services.forecast_service import ForecastService
 from app.api import routes
 
@@ -30,15 +32,33 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-#Initialize DAC (Mock for now)
-mock_dac = MockDAC()
+# Initialize DAC based on configuration
+# Production: uses HTTP client to call DAC REST API
+# Development: uses MockDAC with synthetic data
+if settings.use_mock_dac:
+    print("⚠️  Using MockDAC (development mode)", flush=True)
+    mock_dac = MockDAC()
+    measurement_provider = mock_dac.measurement
+    forecast_read_provider = mock_dac.forecast_read
+    forecast_write_provider = mock_dac.forecast_write
+    core_db_provider = mock_dac.core_db
+else:
+    print(f"🔗 Connecting to DAC at {settings.dac_base_url}", flush=True)
+    dac_client = DACHttpClient(
+        base_url=settings.dac_base_url,
+        timeout=settings.dac_timeout_seconds
+    )
+    measurement_provider = dac_client
+    forecast_read_provider = dac_client
+    forecast_write_provider = dac_client
+    core_db_provider = dac_client
 
-#Initialize ForecastService
+#Initialize ForecastService with DAC providers
 forecast_service = ForecastService(
-    measurement=mock_dac.measurement,
-    forecast_read=mock_dac.forecast_read,
-    forecast_write=mock_dac.forecast_write,
-    core_db=mock_dac.core_db
+    measurement=measurement_provider,
+    forecast_read=forecast_read_provider,
+    forecast_write=forecast_write_provider,
+    core_db=core_db_provider
 )
 
 #Inject service into routes
