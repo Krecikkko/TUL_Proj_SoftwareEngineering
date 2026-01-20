@@ -1,7 +1,7 @@
 import { validate, normalize } from '../validators/inputValidator';
 import { formatAlerts, formatForecasts, formatMeasurements } from '../formatters/dataFormatter';
 
-const API_BASE_URL = "http://127.0.0.1:8000/api/v1/gateway";
+const API_BASE_URL = "http://127.0.0.1:8001/api/v1/gateway";
 
 function getAuthHeaders() {
   const token = localStorage.getItem('access_token');
@@ -76,7 +76,7 @@ async function fetchMeasurements(query) {
     url.searchParams.append("buildingId", query.buildingId || "Building-1");
     
     const from = query.timeRange?.from ?? new Date(Date.now() - 86400000).toISOString();
-    const to   = query.timeRange.to ?? new Date().toISOString();
+    const to   = query.timeRange?.to   ?? new Date().toISOString();
     url.searchParams.append("fromDate", from);
     url.searchParams.append("toDate", to);
 
@@ -121,8 +121,8 @@ export async function getMeasurements(inputParams) {
     return { status: 'no-data', message: "No measurements found"};
   }
   
-  const meta = rawMetadata;
-  const formatted = formatMeasurements(rawData, meta);
+  // const meta = rawMetadata;
+  const formatted = formatMeasurements(rawData);
   return {status: 'ok', data: formatted};
 }
 
@@ -162,8 +162,8 @@ export async function getForecasts(inputParams) {
     return { status: 'no-data', message: "No forecasts found"};
   }
   
-  const meta = rawMetadata;
-  const formatted = formatForecasts(rawData, meta);
+  // const meta = rawMetadata;
+  const formatted = formatForecasts(rawData);
   return {status: 'ok', data: formatted};
 }
 

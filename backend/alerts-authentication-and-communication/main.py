@@ -9,6 +9,7 @@ origins = [
     "http://localhost",
     "http://localhost:3000",  # React default port
     "http://localhost:5173",  # Vite default port
+    "http://localhost:5174",  # Vite default port
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -21,4 +22,4 @@ app.add_middleware(
 app.include_router(gateway_router)
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("main:app", host="127.0.0.1", port=8001, reload=True)
