@@ -1,5 +1,3 @@
-import { rawMetadata } from "../mock_data/rawMetadata";
-
 export function validate(params) {
   const errors = [];
 
@@ -16,10 +14,6 @@ export function validate(params) {
 
   if (!buildingId) {
     errors.push("No Building ID provided.");
-  } else {
-    if (!rawMetadata.buildings[buildingId]) {
-      errors.push(`Building "${buildingId}" does not exist.`);
-    }
   }
 
   return {
