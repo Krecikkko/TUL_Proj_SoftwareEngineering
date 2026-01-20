@@ -2,7 +2,10 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 from datetime import datetime, timedelta
 import random
+import httpx 
+from fastapi import HTTPException
 from DataModels4DAC import Measurement
+from vars import DAC_LOCALHOST
 
 class IMeasurement(ABC):
     @abstractmethod
@@ -14,6 +17,46 @@ class IMeasurement(ABC):
         end_date: datetime,
         device_ids: Optional[List[str]] = None
     ) -> List[Measurement]: pass
+
+
+class MeasurementRepository(IMeasurement):
+    async def get_measurements(
+        self,
+        building_id: str,
+        metric_type: str,
+        start_date: datetime,
+        end_date: datetime,
+        device_ids: Optional[List[str]] = None
+    ) -> List[Measurement]:
+        # Implementacja rzeczywista pobierająca dane z bazy danych
+        params = {
+            "building_id": building_id,
+            "metric_type": metric_type,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat()
+        }
+        if device_ids:
+            extra = [("device_ids", d) for d in device_ids]
+        else:
+            extra = []
+
+        url = f"{DAC_LOCALHOST}/measurements"
+        async with httpx.AsyncClient() as client:
+            try: 
+                resp = await client.get(url, params=[*params.items(), *extra])
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"DAC connection error: {str(e)}")
+            
+        return [Measurement(
+            id = item["id"],
+            device_id = item["device_id"],
+            metric = item["metric"],
+            value = item["value"],
+            timestamp= item["timestamp"],
+            tags = item.get("tags", None)
+        ) for item in resp.json()]
+
+
 
 class MockMeasurementRepository(IMeasurement):
     async def get_measurements(

@@ -1,7 +1,7 @@
 import { validate, normalize } from '../validators/inputValidator';
 import { formatAlerts, formatForecasts, formatMeasurements } from '../formatters/dataFormatter';
 
-const API_BASE_URL = "http://127.0.0.1:8001/api/v1/gateway";
+const API_BASE_URL = "http://127.0.0.1:8000/api/v1/gateway";
 
 function getAuthHeaders() {
   const token = localStorage.getItem('access_token');
@@ -77,7 +77,7 @@ async function fetchMeasurements(query) {
     
     const from = query.fromDate ?? query.timeRange?.from ?? new Date(Date.now() - 86400000).toISOString();
 
-  const to = query.toDate ?? query.timeRange?.to ??new Date().toISOString();
+    const to = query.toDate ?? query.timeRange?.to ??new Date().toISOString();
 
     url.searchParams.append("fromDate", from);
     url.searchParams.append("toDate", to);
@@ -116,7 +116,6 @@ export async function getMeasurements(inputParams) {
 
   const normalizedParams = normalize(inputParams);
   const query = { ...normalizedParams, metric: inputParams.metric, deviceId: inputParams.deviceId };
-  
   const rawData = await fetchMeasurements(query);
   
   if(!rawData || rawData.length === 0) {
@@ -170,11 +169,10 @@ export async function getForecasts(inputParams) {
 }
 
 // --- DASHBOARD ---
-export async function getDashboardStats(buildingId = "Building-1") {
+export async function getDashboardStats(buildingId = "B1") {
   try {
     const url = new URL(`${API_BASE_URL}/dashboard`);
     url.searchParams.append("buildingId", buildingId);
-
     const response = await fetch(url, {headers: getAuthHeaders()});
 
     if(!response.ok) return null;

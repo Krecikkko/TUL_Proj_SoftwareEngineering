@@ -11,12 +11,13 @@ const EnergyChartWidget = () => {
             const query = {
                 buildingId: "B1",
                 metric: "power",
-                fromDate: "2025-01-01",
-                toDate: "2025-01-02"
+                fromDate: "2023-01-01",
+                toDate: "2028-01-02"
             };
 
             try {
                 const result = await getMeasurements(query);
+                console.log("Fetched Measurements for EnergyChartWidget:", result);
                 if (result.status === 'ok') {
                     setChartData(result.data);
                 }

@@ -6,6 +6,7 @@ class Measurement(Document):
     deviceId: str
     metric: str
     value: float
+    buildingId: str
     ts: datetime
     tags: Optional[Dict[str, Any]] = None
     

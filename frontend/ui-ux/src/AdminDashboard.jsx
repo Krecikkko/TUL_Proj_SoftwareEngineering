@@ -13,6 +13,8 @@ const AdminDashboard = () => {
         const fetchData = async () => {
             // Pobieramy dane KPI dla budynku B1
             const data = await getDashboardStats("B1");
+            console.log("Fetched Dashboard Stats:", data);
+            
             if (data) setStats(data);
             setLoading(false);
         };

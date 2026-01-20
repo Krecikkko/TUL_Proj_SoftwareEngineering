@@ -1,0 +1,21 @@
+UI/UX
+cd frontend/ui-ux
+npm run dev -- --port 5173
+
+DV 
+cd frontend/data-visualization
+npm run dev -- --port 5174
+
+AAC
+cd backend/alerts-authentication-and-communication
+uvicorn main:app --port 8000 --reload
+
+DAC
+cd backend/data-access-and-control
+uvicorn app.main:app --port 8001 --reload
+
+Forecast
+cd backend/forecast-and-optimization
+uvicorn app.main:app --port 8002 --reload
+
+

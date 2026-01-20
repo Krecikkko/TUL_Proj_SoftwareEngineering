@@ -38,8 +38,10 @@ async def get_measurements(
             device_ids=device_ids
         )
         return results
+    except RuntimeError as e:
+            raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=repr(e))
     
 @router.post("/forecasts", status_code=201)
 async def create_forecast(req: ForecastCreateRequest):
@@ -72,8 +74,6 @@ async def get_latest_forecast(
         forecast_type=forecast_type,
         horizon=horizon
     )
-    if not result:
-        raise HTTPException(status_code=404, detail="Forecast not found")
     return result
 
 @router.get("/forecasts/{forecast_id}", response_model=Optional[ForecastData])

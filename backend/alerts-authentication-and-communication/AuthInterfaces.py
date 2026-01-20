@@ -6,9 +6,9 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from jose import JWTError, jwt  
 
-from IMeasurement import IMeasurement, MockMeasurementRepository
+from IMeasurement import IMeasurement, MockMeasurementRepository, MeasurementRepository
 from ICoreDb import ICoreDb, MockCoreDb
-from IForecastRead import IForecastRead, MockForecastRepository
+from IForecastRead import IForecastRead, MockForecastRepository, RealForecastRepository
 from DataModels4DAC import (
     UserRole, Alert, AlertSeverity, Measurement, 
     MeasurementResponse, ForecastResponse, Forecast, User
@@ -98,9 +98,10 @@ class AACImplementation(IAccessControlAndCommunication):
 
     async def get_dashboard_view(self, current_user: User, buildingId: str) -> DashboardData:
         
-        end = datetime.utcnow()
-        start = end - timedelta(hours=24)
+        start = datetime.utcnow() - timedelta(weeks=120)
+        end = datetime.utcnow() + timedelta(weeks=120)
         
+
         power_metrics = await self.meas_db.get_measurements(buildingId, "power_w", start, end)
         current_power = sum(m.value for m in power_metrics)
         
@@ -191,7 +192,7 @@ async def get_aac_service():
     return AACImplementation(
         measurement_db=MockMeasurementRepository(),
         core_db=MockCoreDb(),
-        forecast_db=MockForecastRepository()
+        forecast_db= MockForecastRepository( )
     )
 
 async def get_current_user(

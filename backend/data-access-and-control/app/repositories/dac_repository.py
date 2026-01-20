@@ -15,6 +15,7 @@ class MeasurementSchema(BaseModel):
     metric: str
     value: float
     timestamp: datetime
+    building_id: str
     tags: Optional[Dict[str, Any]] = None
 
 class ForecastData(BaseModel):
@@ -74,12 +75,16 @@ class DataAccessGateway(IMeasurement, IForecastRead, IForecastWrite, ICoreDb):
         }
         if device_ids:
             query["deviceId"] = {"$in": device_ids}
-            
-        results = await MeasurementModel.find(query).sort("ts").to_list()
-        
+        if building_id:
+            query["buildingId"] = building_id
+        try:    
+            results = await MeasurementModel.find(query).sort("ts").to_list()
+        except Exception as e:
+            raise RuntimeError(f"Database query error: {str(e)}")
         return [
             MeasurementSchema(
                 id=str(r.id),
+                building_id=r.buildingId,
                 device_id=r.deviceId,
                 metric=r.metric,
                 value=r.value,
