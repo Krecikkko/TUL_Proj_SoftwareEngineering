@@ -19,7 +19,7 @@ class UserStatus(str, Enum):
     PENDING = "pending"
 
 
-class User(Document):
+class UserAccount(Document):
    
     email: str
     password_hash: str
@@ -29,7 +29,7 @@ class User(Document):
     roles: List[UserRole] = [UserRole.USER]
     
     class Settings:
-        name = "Users"
+        name = "user_account"
 
 class Building(Document):
 
@@ -38,7 +38,7 @@ class Building(Document):
     timezone: str = "UTC"
     
     class Settings:
-        name = "Buildings"
+        name = "building"
 
 class Room(Document):
   
@@ -49,24 +49,25 @@ class Room(Document):
     purpose: Optional[str] = None
     
     class Settings:
-        name = "Rooms"
+        name = "room"
 
 class Device(Document):
  
     device_id: str         # The unique hardware ID (e.g., "dev_001")
     room_id: str
+    building_id: str
 
     type: str              # "sensor", "hvac", "lighting"
     vendor: Optional[str] = None
     model: Optional[str] = None
-    serial_no = Optional[str] = None
+    serial_no: Optional[str] = None
 
     rated_power_w: Optional[int] = None
     install_date: Optional[date] = None
     status: DeviceStatus = DeviceStatus.ACTIVE
     
     class Settings:
-        name = "Devices"
+        name = "device"
 
 class Alert(Document):
     device_id: Optional[str] = None
@@ -78,4 +79,11 @@ class Alert(Document):
     status: str
 
     class Settings:
-        name = "Alerts"
+        name = "alert"
+
+class Floor(Document):
+    building_id: str
+    name: str
+    
+    class Settings:
+        name = "floor"
