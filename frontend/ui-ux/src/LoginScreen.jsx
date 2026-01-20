@@ -6,7 +6,7 @@ import './LoginScreen.css';
 const LoginScreen = () => {
     const navigate = useNavigate();
 
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
     // Stany UI
@@ -20,20 +20,17 @@ const LoginScreen = () => {
         setIsLoading(true);
 
         setTimeout(() => {
-            // LOGIKA POZOSTAJE BEZ ZMIAN
-            // Dane testowe: admin@gmail.com / 1234
-            if (email === 'admin@gmail.com' && password === '1234') {
+            // Logowanie po USERNAME (zgodnie z backendem)
+            if (username === 'admin' && password === '1234') {
                 localStorage.setItem('userRole', 'admin');
                 navigate('/admin');
             }
-            // dane testowe: user@gmail.com / 1234
-            else if (email === 'user@gmail.com' && password === '1234') {
+            else if (username === 'user' && password === '1234') {
                 localStorage.setItem('userRole', 'user');
                 navigate('/user');
             }
-            // Błąd
             else {
-                setError('Invalid email or password. Try pass: 1234');
+                setError('Invalid username or password. Try: admin / 1234');
             }
             setIsLoading(false);
         }, 1500);
@@ -55,14 +52,14 @@ const LoginScreen = () => {
 
                 <form onSubmit={handleLogin}>
                     <div className="input-group">
-                        <label htmlFor="email">Email Address</label>
+                        <label htmlFor="username">Username</label>
                         <input
-                            id="email"
-                            type="email"
+                            id="username"
+                            type="text"
                             className="login-input"
-                            placeholder="name@company.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="Enter username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
                             required
                         />
                     </div>

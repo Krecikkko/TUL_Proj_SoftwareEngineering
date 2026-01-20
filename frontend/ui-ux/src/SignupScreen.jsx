@@ -5,22 +5,14 @@ import './SignupScreen.css';
 const SignupScreen = () => {
     const navigate = useNavigate();
 
-    // STAN BEZ ZMIAN
+    // Form State
     const [formData, setFormData] = useState({
+        username: '',
         fullName: '',
         email: '',
-        phone: '',
         password: '',
         confirmPassword: '',
-        role: 'user',
-        buildingName: '',
-        companyCode: '',
-        specialization: '',
-        roomNumber: '',
-        supplierName: '',
-        contractNumber: '',
-        technicianId: '',
-        serviceRegion: ''
+        role: 'user'
     });
 
     const handleChange = (e) => {
@@ -31,16 +23,32 @@ const SignupScreen = () => {
         }));
     };
 
+    // Prepare payload for Backend (maps camelCase to snake_case)
+    const prepareBackendPayload = () => {
+        return {
+            username: formData.username,
+            password: formData.password,
+            email: formData.email,
+            full_name: formData.fullName,
+            role: formData.role
+        };
+    };
+
     const handleSignup = (e) => {
         e.preventDefault();
+
         if (formData.password !== formData.confirmPassword) {
-            alert("Hasła nie są identyczne!");
+            alert("Passwords do not match!");
             return;
         }
-        console.log("Rejestracja - Actor:", formData.role, "Data:", formData);
-        localStorage.setItem('userRole', formData.role);
-        localStorage.setItem('userName', formData.fullName);
-        alert(`Konto utworzone dla roli: ${formData.role.toUpperCase()}`);
+
+        const payload = prepareBackendPayload();
+
+        // Simulate API call
+        console.log("Payload JSON:", JSON.stringify(payload, null, 2));
+        alert(`Account prepared for: ${formData.username}\nRole: ${formData.role}`);
+
+        // Fix: Navigate is now used, so ESLint won't complain
         navigate('/');
     };
 
@@ -55,7 +63,6 @@ const SignupScreen = () => {
 
                 <form onSubmit={handleSignup}>
 
-                    {/* ROLA */}
                     <div className="form-group">
                         <label>I am a:</label>
                         <select
@@ -67,109 +74,67 @@ const SignupScreen = () => {
                             <option value="user">Building User</option>
                             <option value="admin">Administrator</option>
                             <option value="maintenance">Maintenance Engineer</option>
-                            <option value="supplier">Energy Supplier</option>
-                            <option value="service">System Service</option>
                         </select>
                     </div>
 
-                    {/* DANE OSOBOWE */}
+                    <div className="form-group">
+                        <label>Username</label>
+                        <input
+                            type="text"
+                            name="username"
+                            className="signup-input"
+                            value={formData.username}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+
                     <div className="form-group">
                         <label>Full Name</label>
-                        <input type="text" name="fullName" className="signup-input" value={formData.fullName} onChange={handleChange} required />
+                        <input
+                            type="text"
+                            name="fullName"
+                            className="signup-input"
+                            value={formData.fullName}
+                            onChange={handleChange}
+                            required
+                        />
                     </div>
 
                     <div className="form-group">
                         <label>Email Address</label>
-                        <input type="email" name="email" className="signup-input" value={formData.email} onChange={handleChange} required />
+                        <input
+                            type="email"
+                            name="email"
+                            className="signup-input"
+                            value={formData.email}
+                            onChange={handleChange}
+                            required
+                        />
                     </div>
-
-                    <div className="form-group">
-                        <label>Phone Number</label>
-                        <input type="tel" name="phone" className="signup-input" value={formData.phone} onChange={handleChange} required />
-                    </div>
-
-                    {/* --- SEKCJE SPECYFICZNE DLA RÓL (W KONTENERACH) --- */}
-
-                    {/* 1. ADMIN */}
-                    {formData.role === 'admin' && (
-                        <div className="role-specific-box">
-                            <span className="role-specific-label">Admin Details</span>
-                            <div className="form-group">
-                                <label>Building Name</label>
-                                <input type="text" name="buildingName" className="signup-input" placeholder="e.g. Sky Tower" value={formData.buildingName} onChange={handleChange} />
-                            </div>
-                            <div className="form-group">
-                                <label>Company ID</label>
-                                <input type="text" name="companyCode" className="signup-input" value={formData.companyCode} onChange={handleChange} />
-                            </div>
-                        </div>
-                    )}
-
-                    {/* 2. INŻYNIER */}
-                    {formData.role === 'maintenance' && (
-                        <div className="role-specific-box">
-                            <span className="role-specific-label">Engineer Details</span>
-                            <div className="form-group">
-                                <label>Specialization</label>
-                                <select name="specialization" className="signup-select" value={formData.specialization} onChange={handleChange}>
-                                    <option value="">Select...</option>
-                                    <option value="hvac">HVAC</option>
-                                    <option value="electrical">Electrical</option>
-                                    <option value="it">IT/Sensors</option>
-                                </select>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* 3. USER */}
-                    {formData.role === 'user' && (
-                        <div className="role-specific-box">
-                            <span className="role-specific-label">Location</span>
-                            <div className="form-group">
-                                <label>Room Number</label>
-                                <input type="text" name="roomNumber" className="signup-input" placeholder="e.g. 101" value={formData.roomNumber} onChange={handleChange} />
-                            </div>
-                        </div>
-                    )}
-
-                    {/* 4. SUPPLIER */}
-                    {formData.role === 'supplier' && (
-                        <div className="role-specific-box">
-                            <span className="role-specific-label">Supplier Data</span>
-                            <div className="form-group">
-                                <label>Company Name</label>
-                                <input type="text" name="supplierName" className="signup-input" value={formData.supplierName} onChange={handleChange} />
-                            </div>
-                            <div className="form-group">
-                                <label>Contract ID</label>
-                                <input type="text" name="contractNumber" className="signup-input" value={formData.contractNumber} onChange={handleChange} />
-                            </div>
-                        </div>
-                    )}
-
-                    {/* 5. SERVICE */}
-                    {formData.role === 'service' && (
-                        <div className="role-specific-box">
-                            <span className="role-specific-label">Service Data</span>
-                            <div className="form-group">
-                                <label>Technician ID</label>
-                                <input type="text" name="technicianId" className="signup-input" value={formData.technicianId} onChange={handleChange} />
-                            </div>
-                            <div className="form-group">
-                                <label>Region</label>
-                                <input type="text" name="serviceRegion" className="signup-input" value={formData.serviceRegion} onChange={handleChange} />
-                            </div>
-                        </div>
-                    )}
 
                     <div className="form-group">
                         <label>Password</label>
-                        <input type="password" name="password" className="signup-input" value={formData.password} onChange={handleChange} required />
+                        <input
+                            type="password"
+                            name="password"
+                            className="signup-input"
+                            value={formData.password}
+                            onChange={handleChange}
+                            required
+                        />
                     </div>
 
                     <div className="form-group">
                         <label>Confirm Password</label>
-                        <input type="password" name="confirmPassword" className="signup-input" value={formData.confirmPassword} onChange={handleChange} required />
+                        <input
+                            type="password"
+                            name="confirmPassword"
+                            className="signup-input"
+                            value={formData.confirmPassword}
+                            onChange={handleChange}
+                            required
+                        />
                     </div>
 
                     <button type="submit" className="signup-btn">Create Account</button>
