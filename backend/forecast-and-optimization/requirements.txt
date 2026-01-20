@@ -16,6 +16,9 @@ aiofiles==23.2.1
 # Environment variables
 python-dotenv==1.0.0
 
+# HTTP client for DAC integration
+httpx>=0.25.0
+
 # Type hints
 typing-extensions==4.8.0
 
