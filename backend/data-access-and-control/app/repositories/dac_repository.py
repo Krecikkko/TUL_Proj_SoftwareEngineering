@@ -6,6 +6,8 @@ from beanie import PydanticObjectId
 from app.models.measurements import Measurement as MeasurementModel
 from app.models.forecasts import Forecast as ForecastModel
 
+from app.models.core import UserAccount, Building, Device, Room
+
 
 class MeasurementSchema(BaseModel):
     id: str
@@ -27,26 +29,38 @@ class ForecastData(BaseModel):
     scope: Optional[Dict[str, str]]
 
 class BuildingMetadata(BaseModel):
-    pass
+    id: str
+    name: str
+    address: Optional[str] = None
+    timezone: str = "UTC"
 
 class DeviceMetadata(BaseModel):
-    pass
+    id: str
+    device_id: str
+    type: str
+    status: str
+    room_id: str
 
 class UserSchema(BaseModel):
-    pass
+    id: str
+    email: str         
+    password_hash: str
+    roles: List[str]
+
 
 class IMeasurement: pass
 class IForecastRead: pass
 class IForecastWrite: pass
-class ICoreDb: pass
+
+class ICoreDb: 
+    async def get_user_by_email(self, email: str) -> Optional[UserSchema]: pass
 
 
-# --- GŁÓWNA KLASA REPOZYTORIUM ---
 
 class DataAccessGateway(IMeasurement, IForecastRead, IForecastWrite, ICoreDb):
     
     # =========================================================
-    # 1. MEASUREMENTS (Functional - Connects to MongoDB)
+    # 1. MEASUREMENTS
     # =========================================================
     async def get_measurements(
         self, building_id: str, metric_type: str, 
@@ -78,7 +92,7 @@ class DataAccessGateway(IMeasurement, IForecastRead, IForecastWrite, ICoreDb):
         return []
 
     # =========================================================
-    # 2. FORECASTS (Functional - Connects to MongoDB)
+    # 2. FORECASTS
     # =========================================================
     async def create_forecast(
         self, forecast_type: str, horizon: str, building_id: str,
@@ -143,17 +157,65 @@ class DataAccessGateway(IMeasurement, IForecastRead, IForecastWrite, ICoreDb):
         )
 
     # =========================================================
-    # 3. CORE DB (Stubs)
+    # 3. CORE DB 
     # =========================================================
     
     async def get_building(self, building_id: str) -> Optional[BuildingMetadata]:
-        return  None
+        try:
+            b = await Building.get(PydanticObjectId(building_id))
+            if not b:
+                return None
+            
+            return BuildingMetadata(
+                id=str(b.id),
+                name=b.name,
+                address=b.address,
+                timezone=b.timezone
+            )
+        except:
+            return None
 
     async def get_devices(self, building_id: str, device_type: Optional[str] = None, status: Optional[str] = "active") -> List[DeviceMetadata]:
-        return []
+        query = {"building_id": building_id}
+        
+        if device_type:
+            query["type"] = device_type
+        if status:
+            query["status"] = status
+            
+        devices = await Device.find(query).to_list()
+        
+        return [
+            DeviceMetadata(
+                id=str(d.id),
+                device_id=d.device_id,
+                type=d.type,
+                status=d.status,
+                room_id=d.room_id
+            ) for d in devices
+        ]
 
     async def get_device(self, device_id: str) -> Optional[DeviceMetadata]:
-        return None
+        d = await Device.find_one(Device.device_id == device_id)
+        if not d:
+            return None
+            
+        return DeviceMetadata(
+            id=str(d.id),
+            device_id=d.device_id,
+            type=d.type,
+            status=d.status,
+            room_id=d.room_id
+        )
         
-    async def get_user_by_username(self, username: str) -> Optional[UserSchema]:
-        return None
+    async def get_user_by_email(self, email: str) -> Optional[UserSchema]:
+        u = await UserAccount.find_one(UserAccount.email == email)
+        if not u:
+            return None
+            
+        return UserSchema(
+            id=str(u.id),
+            email=u.email, 
+            password_hash=u.password_hash,
+            roles=u.roles
+        )
