@@ -82,9 +82,6 @@ const EnergyChartWidget = () => {
                     </div>
                 ))}
             </div>
-            <div style={{textAlign: 'right', marginTop: '10px', fontSize: '0.7rem', color: '#cbd5e1'}}>
-                Data Source: dvFacade (Live Mock)
-            </div>
         </div>
     );
 };
