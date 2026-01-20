@@ -9,7 +9,7 @@ class ICoreDb(ABC):
 
 class RealCoreDb(ICoreDb):
     async def get_user_by_username(self, username: str) -> Optional[User]:
-        # Implementation to fetch user from the real database
+        # Niezaimplementowano przez DAC
         pass
 
 class MockCoreDb(ICoreDb):

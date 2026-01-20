@@ -9,6 +9,7 @@ origins = [
     "http://localhost",
     "http://localhost:3000",  # React default port
     "http://localhost:5173",  # Vite default port
+    "http://localhost:5174"   # Another common Vite port
 ]
 app.add_middleware(
     CORSMiddleware,

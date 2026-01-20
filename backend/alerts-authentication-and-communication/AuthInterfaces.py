@@ -241,11 +241,10 @@ async def alerts(
 
 @router.get("/measurements")
 async def get_measurements(
-    token: str = Query(...), 
     buildingId: str = Query("Building-1"),
     metric: str = Query(...),
-    fromDate: datetime = Query(None, alias="start"),
-    toDate: datetime = Query(None, alias="end"),
+    fromDate: datetime = Query(None),
+    toDate: datetime = Query(None),
     deviceId: Optional[str] = Query(None),
     svc: IAccessControlAndCommunication = Depends(get_aac_service),
 ):

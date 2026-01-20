@@ -27,7 +27,7 @@ class MockMeasurementRepository(IMeasurement):
         
         readings = []
         for i in range(5):
-            ts = end_date - timedelta(hours=i)
+            ts = end_date - timedelta(minutes=i*10)
             val = 0.0
             
             if metric_type == "power_w": val = random.uniform(4000, 6000)

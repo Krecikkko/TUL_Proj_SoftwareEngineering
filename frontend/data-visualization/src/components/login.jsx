@@ -28,7 +28,7 @@ export function LoginScreen({ onLoginSuccess }) {
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         <input 
           type="text" 
-          placeholder="Username" 
+          placeholder="Email" 
           value={username} 
           onChange={e => setUsername(e.target.value)} 
         />

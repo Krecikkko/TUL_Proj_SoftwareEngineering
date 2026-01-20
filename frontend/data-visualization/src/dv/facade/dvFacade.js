@@ -75,8 +75,10 @@ async function fetchMeasurements(query) {
     // Dodajemy parametry wymagane przez backend
     url.searchParams.append("buildingId", query.buildingId || "Building-1");
     
-    const from = query.timeRange?.from ?? new Date(Date.now() - 86400000).toISOString();
-    const to   = query.timeRange.to ?? new Date().toISOString();
+    const from = query.fromDate ?? query.timeRange?.from ?? new Date(Date.now() - 86400000).toISOString();
+
+  const to = query.toDate ?? query.timeRange?.to ??new Date().toISOString();
+
     url.searchParams.append("fromDate", from);
     url.searchParams.append("toDate", to);
 
@@ -121,8 +123,8 @@ export async function getMeasurements(inputParams) {
     return { status: 'no-data', message: "No measurements found"};
   }
   
-  const meta = rawMetadata;
-  const formatted = formatMeasurements(rawData, meta);
+  //const meta = rawMetadata;
+  const formatted = formatMeasurements(rawData);
   return {status: 'ok', data: formatted};
 }
 
