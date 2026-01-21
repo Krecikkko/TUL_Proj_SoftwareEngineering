@@ -218,7 +218,10 @@ class DACHttpClient(IMeasurement, IForecastRead, IForecastWrite, ICoreDb):
     
     def _parse_forecast_data(self, data: Dict[str, Any]) -> ForecastData:
         """Parse JSON response to ForecastData model."""
+        if(data is None):
+            return None
         valid_for = data.get("valid_for", {})
+        
         
         # Handle datetime parsing for valid_for
         if isinstance(valid_for.get("from"), str):
