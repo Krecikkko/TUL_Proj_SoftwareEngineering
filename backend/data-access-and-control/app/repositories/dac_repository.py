@@ -1,13 +1,15 @@
 from typing import List, Optional, Dict, Any
 from datetime import datetime
+from fastapi import HTTPException
 from pydantic import BaseModel
 from beanie import PydanticObjectId
 
 from app.models.measurements import Measurement as MeasurementModel
 from app.models.forecasts import Forecast as ForecastModel
-
+import logging
 from app.models.core import UserAccount, Building, Device, Room
-
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 class MeasurementSchema(BaseModel):
     id: str
@@ -167,7 +169,7 @@ class DataAccessGateway(IMeasurement, IForecastRead, IForecastWrite, ICoreDb):
     
     async def get_building(self, building_id: str) -> Optional[BuildingMetadata]:
         try:
-            b = await Building.get(PydanticObjectId(building_id))
+            b = await Building.get(building_id)
             if not b:
                 return None
             
@@ -177,8 +179,10 @@ class DataAccessGateway(IMeasurement, IForecastRead, IForecastWrite, ICoreDb):
                 address=b.address,
                 timezone=b.timezone
             )
+        
         except:
-            return None
+            logging.exception("Error retrieving building data")
+            raise HTTPException(status_code=500, detail="Error retrieving building data")
 
     async def get_devices(self, building_id: str, device_type: Optional[str] = None, status: Optional[str] = "active") -> List[DeviceMetadata]:
         query = {"building_id": building_id}

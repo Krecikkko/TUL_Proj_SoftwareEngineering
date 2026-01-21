@@ -5,6 +5,9 @@ API Routes for Forecast & Optimization Module
 from fastapi import APIRouter, HTTPException, status
 from datetime import datetime
 from typing import Optional
+import logging
+logger = logging.getLogger(__name__)
+
 
 from app.schemas.forecast_service import (
     ForecastRequest,

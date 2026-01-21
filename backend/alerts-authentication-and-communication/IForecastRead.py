@@ -68,7 +68,7 @@ class RealForecastRepository(IForecastRead):
         forecast_type: Optional[str] = None
     ) -> List[Forecast]:
         # Niezaimplementowano przez DAC
-        pass
+      pass
 
 
 class MockForecastRepository(IForecastRead):

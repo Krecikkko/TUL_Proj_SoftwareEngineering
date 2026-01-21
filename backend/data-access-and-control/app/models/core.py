@@ -34,6 +34,7 @@ class UserAccount(Document):
 class Building(Document):
 
     name: str
+    id: str
     address: Optional[str] = None
     timezone: str = "UTC"
     
