@@ -6,7 +6,9 @@ import httpx
 from fastapi import HTTPException
 from DataModels4DAC import Measurement
 from vars import DAC_LOCALHOST
-
+import logging
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
 class IMeasurement(ABC):
     @abstractmethod
     async def get_measurements(
@@ -41,10 +43,11 @@ class MeasurementRepository(IMeasurement):
             extra = []
 
         url = f"{DAC_LOCALHOST}/measurements"
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=800.0) as client:
             try: 
                 resp = await client.get(url, params=[*params.items(), *extra])
             except Exception as e:
+                logger.error(f"DAC connection error: {str(e)}")
                 raise HTTPException(status_code=500, detail=f"DAC connection error: {str(e)}")
             
         return [Measurement(

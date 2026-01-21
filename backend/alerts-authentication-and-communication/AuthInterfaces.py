@@ -190,9 +190,9 @@ class AACImplementation(IAccessControlAndCommunication):
 
 async def get_aac_service():
     return AACImplementation(
-        measurement_db=MockMeasurementRepository(),
+        measurement_db=MeasurementRepository(),
         core_db=MockCoreDb(),
-        forecast_db= MockForecastRepository( )
+        forecast_db=RealForecastRepository()
     )
 
 async def get_current_user(
@@ -229,9 +229,11 @@ async def dashboard(
     buildingId: str, 
     current_user: User = Depends(get_current_user), 
     svc: IAccessControlAndCommunication = Depends(get_aac_service)
-):
-    return await svc.get_dashboard_view(current_user, buildingId)
-
+):  
+    try:
+        return await svc.get_dashboard_view(current_user, buildingId)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 @router.get("/alerts")
 async def alerts(
     buildingId: str, fromDate: datetime, toDate: datetime, 

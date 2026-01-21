@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from http.client import HTTPException
+import logging
 import random
 from typing import List, Optional
 from DataModels4DAC import Forecast
@@ -27,37 +28,37 @@ class IForecastRead(ABC):
 
 
 class RealForecastRepository(IForecastRead):
-    # async def get_latest_forecast(
-    #     self, 
-    #     building_id: str, 
-    #     forecast_type: str, 
-    #     horizon: str
-    # ) -> Optional[Forecast]:
-    #     # Niezaimplementowano przez DAC
-    #     url=f"{DAC_LOCALHOST}/forecasts/latest"
-    #     params = {
-    #         "building_id": building_id,
-    #         "forecast_type": forecast_type,
-    #         "horizon": horizon
-    #     }
-    #     async with httpx.AsyncClient() as client:
-    #         try:
-    #             resp =  await client.get(url, params=params)
-    #         except Exception as e:
-    #             raise HTTPException(status_code=500, detail=f"DAC connection error: {str(e)}")
-    #     item = resp.json()
-    #     return Forecast(
-    #         id=item["id"],
-    #         type=item["type"],
-    #         horizon=item["horizon"],
-    #         issued_at=item["issued_at"],
-    #         requested_by=item["requested_by"],
-    #         series_item=item["series_item"],
-    #         valid_for=item["valid_for"],
-    #         model_meta=item["model_meta"],
-    #         scope=item.get("scope", None)
-    #     )
-    pass
+    async def get_latest_forecast(
+        self, 
+        building_id: str, 
+        forecast_type: str, 
+        horizon: str
+    ) -> Optional[Forecast]:
+        # Niezaimplementowano przez DAC
+        url=f"{DAC_LOCALHOST}/forecasts/latest"
+        params = {
+            "building_id": building_id,
+            "forecast_type": forecast_type,
+            "horizon": horizon
+        }
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            try:
+                resp =  await client.get(url, params=params)
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"DAC connection error: {str(e)}")
+        item = resp.json()
+        return Forecast(
+           id = item["id"],
+           type = item["type"], 
+              horizon = item["horizon"],
+              issued_at = item["issued_at"],
+                requested_by = item["requested_by"],
+                series_item = item["series_item"],
+                valid_for = item["valid_for"],
+                model_meta = item["model_meta"],
+                scope = item.get("scope", None)
+                
+        )
 
     async def get_forecasts_in_range(
         self,
