@@ -7,10 +7,10 @@ from app.models.core import UserAccount, Building, Floor, Room, Device
 
 async def init_db(uri: str):
     client = motor.motor_asyncio.AsyncIOMotorClient(uri)
-    db = client.Measurements
+    db = client.get_default_database()
     
     await init_beanie(
-        database=db, 
+        database=db,
         document_models=[
             Measurement,
             Forecast,

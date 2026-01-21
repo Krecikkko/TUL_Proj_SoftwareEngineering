@@ -8,7 +8,7 @@ import { getDashboardStats } from '../../data-visualization/src/dv/facade/dvFaca
 const AdminDashboard = () => {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
-
+    console.log(stats);
     useEffect(() => {
         const fetchData = async () => {
             // Pobieramy dane KPI dla budynku B1

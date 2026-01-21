@@ -4,15 +4,24 @@ import { getMeasurements } from '../../../data-visualization/src/dv/facade/dvFac
 const EnergyChartWidget = () => {
     const [chartData, setChartData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const today = new Date();
 
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
+    const fromDate = yesterday.toISOString().slice(0, 10);
+    const toDate = tomorrow.toISOString().slice(0, 10);
     useEffect(() => {
         const loadData = async () => {
             // Pytamy o MOC (Power)
             const query = {
                 buildingId: "B1",
                 metric: "power",
-                fromDate: "2023-01-01",
-                toDate: "2028-01-02"
+                fromDate: fromDate,
+                toDate: toDate
             };
 
             try {

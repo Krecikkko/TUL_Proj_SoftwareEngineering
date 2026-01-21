@@ -174,7 +174,6 @@ export async function getDashboardStats(buildingId = "B1") {
     const url = new URL(`${API_BASE_URL}/dashboard`);
     url.searchParams.append("buildingId", buildingId);
     const response = await fetch(url, {headers: getAuthHeaders()});
-
     if(!response.ok) return null;
     return await response.json();
   }
